@@ -18,6 +18,7 @@ const personTemplate = document.querySelector("#person-template");
 const alertTemplate = document.querySelector("#alert-template");
 
 let locations = loadLocations();
+const alertResults = new WeakMap();
 
 function showError(element, message) {
   element.textContent = message;
@@ -72,11 +73,31 @@ function renderPeople(node, location) {
       });
     list.append(item);
   }
+
+  const result = alertResults.get(node);
+  if (result) {
+    renderAlertStatus(node, result);
+  }
 }
 
-function renderAlerts(node, { alerts, errors }) {
-  const list = node.querySelector("[data-alerts]");
+function renderAlertStatus(node, { alerts, errors }) {
   const status = node.querySelector("[data-alert-status]");
+  const messages = [];
+  if (alerts.length === 0) {
+    messages.push("No active alerts for this location.");
+  } else {
+    const people = node.querySelectorAll("[data-people] [data-person]").length;
+    messages.push(
+      `${alerts.length} active alert${alerts.length === 1 ? "" : "s"} · ${people} ${people === 1 ? "person" : "people"} to notify.`,
+    );
+  }
+  messages.push(...errors);
+  status.textContent = messages.join(" ");
+}
+
+function renderAlerts(node, result) {
+  const { alerts } = result;
+  const list = node.querySelector("[data-alerts]");
   list.textContent = "";
 
   for (const alert of alerts) {
@@ -105,17 +126,8 @@ function renderAlerts(node, { alerts, errors }) {
     list.append(item);
   }
 
-  const messages = [];
-  if (alerts.length === 0) {
-    messages.push("No active alerts for this location.");
-  } else {
-    const people = node.querySelectorAll("[data-people] [data-person]").length;
-    messages.push(
-      `${alerts.length} active alert${alerts.length === 1 ? "" : "s"} · ${people} ${people === 1 ? "person" : "people"} to notify.`,
-    );
-  }
-  messages.push(...errors);
-  status.textContent = messages.join(" ");
+  alertResults.set(node, result);
+  renderAlertStatus(node, result);
 }
 
 async function loadAlertsFor(node, location) {

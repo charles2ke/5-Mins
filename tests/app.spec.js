@@ -96,6 +96,9 @@ test("adds and removes people to alert for a location", async ({
 
   await expect(page.locator("[data-person]")).toHaveCount(1);
   await expect(page.getByText("ada@example.com")).toBeVisible();
+  await expect(page.locator("[data-alert-status]")).toContainText(
+    "1 person to notify",
+  );
 
   await testInfo.attach("people-to-alert", {
     body: await page.screenshot({ fullPage: true }),
@@ -104,6 +107,9 @@ test("adds and removes people to alert for a location", async ({
 
   await page.getByRole("button", { name: "Remove", exact: true }).click();
   await expect(page.locator("[data-person]")).toHaveCount(0);
+  await expect(page.locator("[data-alert-status]")).toContainText(
+    "0 people to notify",
+  );
   await expect(
     page.getByText("Nobody will be alerted for this location yet."),
   ).toBeVisible();
