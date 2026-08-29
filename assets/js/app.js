@@ -137,7 +137,17 @@ async function loadAlertsFor(node, location) {
     const result = await fetchAlerts(location);
     renderAlerts(node, result);
   } catch (error) {
-    status.textContent = `Could not load alerts: ${error.message || error}`;
+    let message;
+    if (error instanceof Error) {
+      message = error.message;
+    } else {
+      try {
+        message = JSON.stringify(error) || String(error);
+      } catch {
+        message = String(error);
+      }
+    }
+    status.textContent = `Could not load alerts: ${message}`;
   }
 }
 

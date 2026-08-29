@@ -34,7 +34,15 @@ export function normaliseLocation(input) {
     name,
     lat,
     lon,
-    people: Array.isArray(input.people) ? input.people.map(normalisePerson) : [],
+    people: Array.isArray(input.people)
+      ? input.people.flatMap((person) => {
+          try {
+            return [normalisePerson(person)];
+          } catch {
+            return [];
+          }
+        })
+      : [],
   };
 }
 

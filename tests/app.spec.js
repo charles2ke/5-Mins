@@ -127,6 +127,33 @@ test("keeps locations and people after a reload", async ({ page }) => {
   await expect(page.getByText("Grace Hopper")).toBeVisible();
 });
 
+test("keeps a stored location when one person is malformed", async ({
+  page,
+}) => {
+  await page.evaluate(() => {
+    localStorage.setItem(
+      "5-mins.locations.v1",
+      JSON.stringify([
+        {
+          id: "miami",
+          name: "Miami",
+          lat: 25.7617,
+          lon: -80.1918,
+          people: [
+            { id: "ada", name: "Ada Lovelace", contact: "ada@example.com" },
+            { id: "invalid", name: "", contact: "" },
+          ],
+        },
+      ]),
+    );
+  });
+  await page.reload();
+
+  await expect(page.getByRole("heading", { name: "Miami" })).toBeVisible();
+  await expect(page.getByText("Ada Lovelace")).toBeVisible();
+  await expect(page.locator("[data-person]")).toHaveCount(1);
+});
+
 test("rejects invalid coordinates", async ({ page }) => {
   await addLocation(page, "Nowhere", "999", "0");
   await expect(
