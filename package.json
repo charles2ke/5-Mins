@@ -1,0 +1,13 @@
+{
+  "name": "5-mins",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Alert people at your locations before a catastrophe or disaster.",
+  "scripts": {
+    "start": "python3 -m http.server 4173",
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
+  }
+}

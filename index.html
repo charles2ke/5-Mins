@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>5-Mins &mdash; disaster alerts before it is too late</title>
+    <meta
+      name="description"
+      content="Add locations and the people who should be warned, and see every disaster or catastrophe alert currently active for those locations."
+    />
+    <link rel="stylesheet" href="assets/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>&#9888;</text></svg>"
+    />
+  </head>
+  <body>
+    <header class="site-header">
+      <h1>5-Mins</h1>
+      <p class="tagline">
+        Add a location, add the people who must know, and see every disaster
+        alert currently active there.
+      </p>
+    </header>
+
+    <main>
+      <section class="panel" aria-labelledby="add-location-heading">
+        <h2 id="add-location-heading">Add a location</h2>
+        <form id="location-form" class="form-grid" novalidate>
+          <div class="field">
+            <label for="location-name">Location name</label>
+            <input
+              id="location-name"
+              name="name"
+              type="text"
+              placeholder="Home, Miami FL, ..."
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="location-lat">Latitude</label>
+            <input
+              id="location-lat"
+              name="lat"
+              type="number"
+              step="any"
+              min="-90"
+              max="90"
+              placeholder="25.7617"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="location-lon">Longitude</label>
+            <input
+              id="location-lon"
+              name="lon"
+              type="number"
+              step="any"
+              min="-180"
+              max="180"
+              placeholder="-80.1918"
+              required
+            />
+          </div>
+          <div class="actions">
+            <button type="submit" class="primary">Add location</button>
+            <button type="button" id="use-my-location">Use my location</button>
+          </div>
+        </form>
+        <p id="location-form-error" class="error" role="alert" hidden></p>
+      </section>
+
+      <section class="panel" aria-labelledby="locations-heading">
+        <div class="panel-header">
+          <h2 id="locations-heading">Locations &amp; alerts</h2>
+          <button type="button" id="refresh-alerts">Refresh alerts</button>
+        </div>
+        <p id="empty-state" class="empty">
+          No locations yet. Add one above to start watching for alerts.
+        </p>
+        <ul id="locations" class="locations"></ul>
+      </section>
+
+      <section class="panel" aria-labelledby="sources-heading">
+        <h2 id="sources-heading">Where the alerts come from</h2>
+        <ul class="sources">
+          <li>
+            <strong>US National Weather Service</strong> &mdash; active warnings
+            and watches (hurricane, tornado, flood, wildfire, winter storm,
+            tsunami and more) for locations in the United States.
+          </li>
+          <li>
+            <strong>USGS Earthquake Hazards Program</strong> &mdash; significant
+            earthquakes near the location, worldwide.
+          </li>
+        </ul>
+        <p class="note">
+          Locations and people are stored only in this browser. Nothing is sent
+          to a server.
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        5-Mins is an informational tool. Always follow instructions from
+        your local emergency services.
+      </p>
+    </footer>
+
+    <template id="location-template">
+      <li class="location" data-location>
+        <div class="location-header">
+          <div>
+            <h3 data-location-name></h3>
+            <p class="coords" data-location-coords></p>
+          </div>
+          <button type="button" class="danger" data-remove-location>
+            Remove location
+          </button>
+        </div>
+
+        <div class="location-body">
+          <div class="people">
+            <h4>People to alert</h4>
+            <ul class="people-list" data-people></ul>
+            <p class="empty" data-people-empty>
+              Nobody will be alerted for this location yet.
+            </p>
+            <form class="person-form" data-person-form novalidate>
+              <input
+                type="text"
+                name="name"
+                placeholder="Name"
+                aria-label="Person name"
+                required
+              />
+              <input
+                type="text"
+                name="contact"
+                placeholder="Email or phone"
+                aria-label="Email or phone"
+                required
+              />
+              <button type="submit">Add person</button>
+            </form>
+            <p class="error" data-person-error role="alert" hidden></p>
+          </div>
+
+          <div class="alerts">
+            <h4>Active alerts</h4>
+            <p class="status" data-alert-status>Loading alerts&hellip;</p>
+            <ul class="alert-list" data-alerts></ul>
+          </div>
+        </div>
+      </li>
+    </template>
+
+    <template id="person-template">
+      <li class="person" data-person>
+        <span data-person-name></span>
+        <span class="contact" data-person-contact></span>
+        <button type="button" class="link" data-remove-person>Remove</button>
+      </li>
+    </template>
+
+    <template id="alert-template">
+      <li class="alert" data-alert>
+        <div class="alert-top">
+          <span class="severity" data-alert-severity></span>
+          <span class="source" data-alert-source></span>
+        </div>
+        <h5 data-alert-event></h5>
+        <p data-alert-headline></p>
+        <p class="meta" data-alert-meta></p>
+        <a data-alert-link target="_blank" rel="noopener noreferrer">Details</a>
+      </li>
+    </template>
+
+    <script type="module" src="assets/js/app.js"></script>
+  </body>
+</html>
