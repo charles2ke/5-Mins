@@ -136,7 +136,9 @@ test("still shows alerts when one source fails", async ({ page }) => {
   await addLocation(page);
 
   await expect(page.locator("[data-alert]")).toHaveCount(1);
-  await expect(page.getByText("US National Weather Service:")).toBeVisible();
+  await expect(page.locator("[data-alert-status]")).toContainText(
+    "US National Weather Service: Request failed with status 500",
+  );
 });
 
 test("removes a location", async ({ page }) => {
