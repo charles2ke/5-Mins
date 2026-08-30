@@ -17,10 +17,10 @@ searchable and the coordinates are filled in for you:
 
 ![The location name field showing city suggestions for "Miam", with Miami, Miami Beach, Miami Gardens and Miami Lakes listed below the input](docs/images/city-autocomplete.png)
 
-Each location lists the people to warn next to every alert that is currently
-active there, most severe first:
+Each location lists the people to warn next to every alert reported there in
+the last 7 days, most severe first:
 
-![A saved Miami location with one person to alert and three active alerts: an extreme hurricane warning, a severe earthquake and a moderate flood watch](docs/images/locations-and-alerts.png)
+![A saved Miami location with one person to alert and six alerts from the last 7 days: an extreme hurricane warning, a severe earthquake, a severe GDACS flood alert, a severe space weather alert, a moderate flood watch and a wildfire tracked by NASA EONET](docs/images/locations-and-alerts.png)
 
 ## Features
 
