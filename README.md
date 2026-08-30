@@ -2,13 +2,16 @@
 
 Provide users an alert before a catastrophe or disaster. The crucial minutes to save lives. 
 
-5-Mins is a small static website with two pages:
+5-Mins is a small static website with four pages:
 
 - **Home** — a world map of every disaster or catastrophe alert reported for
   the locations you watch over the last 7 days, with filters by country, city
   and severity.
 - **Setup** — where you add the **locations** you care about and the **people**
   who must be warned about each of them.
+- **Sources** — the free public feeds every alert comes from, and what happens
+  to the data you enter.
+- **Install** — how to install 5-Mins as an app on any device.
 
 **Live site:** https://charles2ke.github.io/5-Mins/ (published automatically from
 `main`).
@@ -59,7 +62,8 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
 - Locations and people are stored in the browser's `localStorage`, so they
   survive reloads and never leave your device.
 - Runs as an installable Progressive Web App on Android, iOS, iPadOS, Windows,
-  macOS and Linux, and can reopen offline.
+  macOS and Linux, and can reopen offline. The **Install** page carries the
+  install button and the per-platform instructions.
 
 ## Screenshots
 
@@ -116,7 +120,9 @@ or dark for good:
 | --- | --- |
 | ![The home page in light mode: a pale page with a light world map and the Dark mode toggle switched off](docs/images/theme-light.png) | ![The home page in dark mode: a deep navy page with a dark world map and the Dark mode toggle switched on](docs/images/theme-dark.png) |
 
-![The 5-Mins page with an "Install this app on your device" panel](docs/images/install-panel.png)
+![The install page with an "Install this app on your device" panel and an Install app button](docs/images/install-panel.png)
+
+![The sources page listing the five free public alert feeds behind 5-Mins](docs/images/sources-page.png)
 
 ## Alert sources
 
