@@ -526,7 +526,7 @@ test("switches theme with the toggle and keeps the choice", async ({
 }, testInfo) => {
   await page.emulateMedia({ colorScheme: "light" });
   await addLocation(page);
-  await expect(page.locator("[data-alert]")).toHaveCount(3);
+  await expect(page.locator("[data-alert]")).toHaveCount(6);
 
   await testInfo.attach("light-theme", {
     body: await page.screenshot({ fullPage: true }),
