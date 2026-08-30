@@ -209,13 +209,15 @@ function renderSummary(shown) {
       "locations",
     )}.`,
   );
-  parts.push(
-    `Showing ${shown.length} of ${pluralise(
-      locations.length,
-      "location",
-      "locations",
-    )}.`,
-  );
+  if (shown.length !== locations.length) {
+    parts.push(
+      `Showing ${shown.length} of ${pluralise(
+        locations.length,
+        "location",
+        "locations",
+      )}.`,
+    );
+  }
   if (loading > 0) {
     parts.push(`Loading ${loading} more…`);
   }
