@@ -1,4 +1,10 @@
-import { ALERT_WINDOW_DAYS, fetchAlerts, SEVERITY_ORDER } from "./alerts.js";
+import {
+  ALERT_WINDOW_DAYS,
+  fetchAlerts,
+  isWorldwideAlert,
+  SEVERITY_ORDER,
+  WORLDWIDE_AREA,
+} from "./alerts.js";
 import { describePlace, matchesFilters, placeKey, placeOptions } from "./places.js";
 import { loadLocations, saveLocations } from "./store.js";
 import { drawGraticule, drawLand, drawMarkers } from "./worldmap.js";
@@ -13,6 +19,8 @@ const refreshButton = document.querySelector("#refresh-alerts");
 const clearFiltersButton = document.querySelector("#clear-filters");
 const countryFilter = document.querySelector("#filter-country");
 const cityFilter = document.querySelector("#filter-city");
+const severityFilter = document.querySelector("#filter-severity");
+const filterHint = document.querySelector("#filter-hint");
 const mapSummary = document.querySelector("#map-summary");
 const markerGroup = document.querySelector("#map-markers");
 const locationList = document.querySelector("#locations");
@@ -28,9 +36,13 @@ const locations = loadLocations();
 const results = new Map();
 /** Live weather per location id: `{ status, weather, error }`. */
 const weatherResults = new Map();
-const filters = { country: "", city: "" };
+const filters = { country: "", city: "", severity: "" };
 /** Labels for filters that came from the URL and match no location. */
 const filterLabels = { country: "", city: "" };
+/** Ids of the cards the reader has folded away. */
+const collapsed = new Set();
+/** Id of the card that lists the alerts affecting every location. */
+const WORLDWIDE_ID = "worldwide";
 let selectedId = null;
 
 drawGraticule(document.querySelector("#map-graticule"));
@@ -91,8 +103,47 @@ function topSeverity(alerts) {
   return best;
 }
 
-function visibleLocations() {
+/** The alerts of a location, minus the ones that affect the whole planet. */
+function localAlerts(location) {
+  return resultFor(location).alerts.filter((alert) => !isWorldwideAlert(alert));
+}
+
+/** True while the selected severity filter, if any, keeps this alert. */
+function matchesSeverity(alert) {
+  return !filters.severity || placeKey(alert.severity) === filters.severity;
+}
+
+function filterAlerts(alerts) {
+  return alerts.filter(matchesSeverity);
+}
+
+/** Every worldwide alert reported for `shown`, each listed only once. */
+function worldwideAlerts(shown) {
+  const seen = new Set();
+  const alerts = [];
+  for (const location of shown) {
+    for (const alert of resultFor(location).alerts) {
+      if (!isWorldwideAlert(alert) || seen.has(alert.id)) continue;
+      seen.add(alert.id);
+      alerts.push(alert);
+    }
+  }
+  return filterAlerts(alerts);
+}
+
+/** Locations kept by the country and city filters. */
+function placeMatches() {
   return locations.filter((location) => matchesFilters(location, filters));
+}
+
+function visibleLocations() {
+  return placeMatches().filter((location) => {
+    // A location still loading is kept so the list does not flash empty.
+    if (!filters.severity || resultFor(location).status === "loading") {
+      return true;
+    }
+    return filterAlerts(localAlerts(location)).length > 0;
+  });
 }
 
 function pluralise(count, singular, plural) {
@@ -130,20 +181,46 @@ function syncSafetyCheckIns(location, { alerts, errors }) {
 
 /* ---------------------------------------------------------------- filters */
 
+/**
+ * Fills a filter with `options`.
+ *
+ * Every alert and weather response re-renders the page, and rebuilding a
+ * `<select>` closes the list a reader has just opened, so the options are only
+ * replaced when they actually changed.
+ */
 function fillSelect(select, options, selectedKey, allLabel) {
-  select.textContent = "";
-  const all = document.createElement("option");
-  all.value = "";
-  all.textContent = allLabel;
-  select.append(all);
+  const signature = JSON.stringify([
+    allLabel,
+    options.map((option) => [option.key, option.label]),
+  ]);
 
-  for (const option of options) {
-    const node = document.createElement("option");
-    node.value = option.key;
-    node.textContent = option.label;
-    select.append(node);
+  if (select.dataset.options !== signature) {
+    select.textContent = "";
+    const all = document.createElement("option");
+    all.value = "";
+    all.textContent = allLabel;
+    select.append(all);
+
+    for (const option of options) {
+      const node = document.createElement("option");
+      node.value = option.key;
+      node.textContent = option.label;
+      select.append(node);
+    }
+    select.dataset.options = signature;
   }
-  select.value = selectedKey;
+
+  if (select.value !== selectedKey) {
+    select.value = selectedKey;
+  }
+}
+
+/** The severities a reader can filter on, newest feeds included. */
+function severityOptions() {
+  return SEVERITY_ORDER.map((severity) => ({
+    key: placeKey(severity),
+    label: severity,
+  }));
 }
 
 /**
@@ -173,10 +250,16 @@ function renderFilters() {
 
   fillSelect(countryFilter, countries, filters.country, "All countries");
   fillSelect(cityFilter, cities, filters.city, "All cities");
+  fillSelect(severityFilter, severityOptions(), filters.severity, "All severities");
 
   countryFilter.disabled = countries.length === 0;
   cityFilter.disabled = cities.length === 0;
-  clearFiltersButton.disabled = !filters.country && !filters.city;
+  severityFilter.disabled = locations.length === 0;
+  clearFiltersButton.disabled = Object.values(filters).every((value) => !value);
+  // Without a city or country on any location the place filters stay empty,
+  // which otherwise looks like a broken control.
+  filterHint.hidden =
+    locations.length === 0 || countries.length > 0 || cities.length > 0;
 }
 
 function syncFiltersToUrl() {
@@ -203,6 +286,10 @@ function readFiltersFromUrl() {
     filters[field] = placeKey(raw);
     filterLabels[field] = raw;
   }
+  const severity = placeKey(params.get("severity") ?? "");
+  filters.severity = severityOptions().some((option) => option.key === severity)
+    ? severity
+    : "";
 }
 
 /* -------------------------------------------------------------------- map */
@@ -210,7 +297,8 @@ function readFiltersFromUrl() {
 function renderMap(shown) {
   const markers = shown.map((location) => {
     const result = resultFor(location);
-    const alertCount = result.alerts.length;
+    const alerts = filterAlerts(localAlerts(location));
+    const alertCount = alerts.length;
     const place = describePlace(location);
     const label = `${location.name}${place ? ` (${place})` : ""} — ${
       result.status === "loading"
@@ -223,7 +311,7 @@ function renderMap(shown) {
       lat: location.lat,
       lon: location.lon,
       alertCount,
-      severity: topSeverity(result.alerts),
+      severity: topSeverity(alerts),
       selected: location.id === selectedId,
     };
   });
@@ -231,7 +319,7 @@ function renderMap(shown) {
   drawMarkers(markerGroup, markers, { onSelect: selectLocation });
 }
 
-function renderSummary(shown) {
+function renderSummary(shown, worldwide) {
   if (locations.length === 0) {
     mapSummary.textContent =
       "No locations yet. Add them on the setup page to see them on the map.";
@@ -242,10 +330,11 @@ function renderSummary(shown) {
   const loading = shown.filter(
     (location) => resultFor(location).status === "loading",
   ).length;
-  const totalAlerts = shown.reduce(
-    (total, location) => total + resultFor(location).alerts.length,
-    0,
-  );
+  const totalAlerts =
+    shown.reduce(
+      (total, location) => total + filterAlerts(localAlerts(location)).length,
+      0,
+    ) + worldwide.length;
   parts.push(
     `${pluralise(totalAlerts, "alert", "alerts")} in the last ${ALERT_WINDOW_DAYS} days across ${pluralise(
       shown.length,
@@ -262,6 +351,15 @@ function renderSummary(shown) {
       )}.`,
     );
   }
+  if (worldwide.length > 0) {
+    parts.push(
+      `Including ${pluralise(
+        worldwide.length,
+        "alert",
+        "alerts",
+      )} affecting everywhere.`,
+    );
+  }
   if (loading > 0) {
     parts.push(`Loading ${loading} more…`);
   }
@@ -270,6 +368,8 @@ function renderSummary(shown) {
 
 function selectLocation(id) {
   selectedId = selectedId === id ? null : id;
+  // A folded card would hide the alerts the reader just asked to see.
+  if (selectedId) collapsed.delete(id);
   render();
   const node = locationList.querySelector(`[data-location-id="${CSS.escape(id)}"]`);
   if (node && selectedId) {
@@ -461,8 +561,55 @@ function renderWeather(node, location) {
   );
 }
 
+/**
+ * Wires a card up so it can be folded away, and restores the state the reader
+ * left it in: every render rebuilds the cards from the template.
+ */
+function setupCollapse(node, id) {
+  const details = node.querySelector("[data-location-details]");
+  details.open = !collapsed.has(id);
+  details.addEventListener("toggle", () => {
+    if (details.open) {
+      collapsed.delete(id);
+    } else {
+      collapsed.add(id);
+    }
+  });
+}
+
+function renderSeverityBadge(node, alerts) {
+  const badge = node.querySelector("[data-location-severity]");
+  const severity = topSeverity(alerts);
+  badge.textContent = severity;
+  badge.dataset.severity = severity;
+  badge.hidden = alerts.length === 0;
+}
+
+/** One card for the alerts that reach every location, without local weather. */
+function renderWorldwide(alerts) {
+  const node = locationTemplate.content.firstElementChild.cloneNode(true);
+  node.dataset.locationId = WORLDWIDE_ID;
+  node.dataset.worldwide = "true";
+
+  node.querySelector("[data-location-name]").textContent = WORLDWIDE_AREA;
+  node.querySelector("[data-location-place]").hidden = true;
+  node.querySelector("[data-location-coords]").hidden = true;
+  // Worldwide alerts belong to no place, so there is no weather to report.
+  node.querySelector("[data-weather]").remove();
+  node.querySelector("[data-people-summary]").hidden = true;
+
+  renderSeverityBadge(node, alerts);
+  node.querySelector("[data-alert-status]").textContent =
+    `${pluralise(alerts.length, "alert", "alerts")} in the last ${ALERT_WINDOW_DAYS} days affecting every location.`;
+
+  renderAlerts(node, alerts);
+  setupCollapse(node, WORLDWIDE_ID);
+  locationList.append(node);
+}
+
 function renderLocation(location) {
   const result = resultFor(location);
+  const alerts = filterAlerts(localAlerts(location));
   const node = locationTemplate.content.firstElementChild.cloneNode(true);
   node.dataset.locationId = location.id;
   if (location.id === selectedId) {
@@ -479,24 +626,20 @@ function renderLocation(location) {
   node.querySelector("[data-location-coords]").textContent =
     `${location.lat.toFixed(4)}, ${location.lon.toFixed(4)}`;
 
-  const badge = node.querySelector("[data-location-severity]");
-  const severity = topSeverity(result.alerts);
-  badge.textContent = severity;
-  badge.dataset.severity = severity;
-  badge.hidden = result.alerts.length === 0;
+  renderSeverityBadge(node, alerts);
 
   const status = node.querySelector("[data-alert-status]");
   if (result.status === "loading") {
     status.textContent = "Loading alerts…";
   } else {
     const messages = [];
-    if (result.alerts.length === 0) {
+    if (alerts.length === 0) {
       messages.push(
         `No alerts in the last ${ALERT_WINDOW_DAYS} days for this location.`,
       );
     } else {
       messages.push(
-        `${pluralise(result.alerts.length, "alert", "alerts")} in the last ${ALERT_WINDOW_DAYS} days · ${pluralise(
+        `${pluralise(alerts.length, "alert", "alerts")} in the last ${ALERT_WINDOW_DAYS} days · ${pluralise(
           location.people.length,
           "person",
           "people",
@@ -517,14 +660,17 @@ function renderLocation(location) {
       : `Will alert: ${location.people.map((person) => person.name).join(", ")}.`;
 
   renderWeather(node, location);
-  renderPeople(node, location, result.alerts.length > 0);
-  renderAlerts(node, result.alerts);
+  renderPeople(node, location, alerts.length > 0);
+  renderAlerts(node, alerts);
+  setupCollapse(node, location.id);
   locationList.append(node);
 }
 
 function render() {
   renderFilters();
   const shown = visibleLocations();
+  // Worldwide alerts survive a severity filter that hides every location.
+  const worldwide = worldwideAlerts(placeMatches());
 
   emptyState.hidden = locations.length > 0;
   noMatches.hidden = locations.length === 0 || shown.length > 0;
@@ -533,9 +679,12 @@ function render() {
   for (const location of shown) {
     renderLocation(location);
   }
+  if (worldwide.length > 0) {
+    renderWorldwide(worldwide);
+  }
 
   renderMap(shown);
-  renderSummary(shown);
+  renderSummary(shown, worldwide);
 }
 
 /* ------------------------------------------------------------------ alerts */
@@ -544,7 +693,12 @@ async function loadAlertsFor(location) {
   results.set(location.id, { status: "loading", alerts: [], errors: [] });
   try {
     const { alerts, errors } = await fetchAlerts(location);
-    syncSafetyCheckIns(location, { alerts, errors });
+    // Worldwide alerts reach every location, so they never single one out for
+    // a safety check-in.
+    syncSafetyCheckIns(location, {
+      alerts: alerts.filter((alert) => !isWorldwideAlert(alert)),
+      errors,
+    });
     results.set(location.id, { status: "ready", alerts, errors });
   } catch (error) {
     results.set(location.id, {
@@ -614,9 +768,16 @@ cityFilter.addEventListener("change", () => {
   render();
 });
 
+severityFilter.addEventListener("change", () => {
+  filters.severity = severityFilter.value;
+  syncFiltersToUrl();
+  render();
+});
+
 clearFiltersButton.addEventListener("click", () => {
   filters.country = "";
   filters.city = "";
+  filters.severity = "";
   filterLabels.country = "";
   filterLabels.city = "";
   syncFiltersToUrl();

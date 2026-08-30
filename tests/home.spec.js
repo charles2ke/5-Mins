@@ -228,6 +228,11 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
+/** The location cards, without the shared "Worldwide" card. */
+function locationCards(page) {
+  return page.locator("[data-location]:not([data-worldwide])");
+}
+
 async function seed(page, locations) {
   await page.addInitScript((value) => {
     localStorage.setItem("5-mins.locations.v1", value);
@@ -256,16 +261,16 @@ test("maps every recent alert for every location", async ({
   await page.goto("/");
 
   await expect(page.locator(".map-marker")).toHaveCount(2);
-  await expect(page.locator("[data-alert]")).toHaveCount(11);
+  await expect(page.locator("[data-alert]")).toHaveCount(10);
   await expect(page.locator("#map-summary")).toContainText(
-    "11 alerts in the last 7 days across 2 locations",
+    "10 alerts in the last 7 days across 2 locations",
   );
 
-  const cards = page.locator("[data-location]");
+  const cards = locationCards(page);
   await expect(cards).toHaveCount(2);
   await expect(cards.first()).toContainText("Miami, United States");
   await expect(cards.first()).toContainText(
-    "6 alerts in the last 7 days · 1 person to notify.",
+    "5 alerts in the last 7 days · 1 person to notify.",
   );
   await expect(cards.first().locator("[data-alert]").first()).toContainText(
     "Hurricane Warning",
@@ -287,7 +292,7 @@ test("filters the map and the list by country", async ({ page }, testInfo) => {
 
   await page.getByLabel("Filter by country").selectOption({ label: "Japan" });
 
-  await expect(page.locator("[data-location]")).toHaveCount(1);
+  await expect(locationCards(page)).toHaveCount(1);
   await expect(page.locator(".map-marker")).toHaveCount(1);
   await expect(page.getByRole("heading", { name: "Tokyo office" })).toBeVisible();
   await expect(page.locator("#map-summary")).toContainText(
@@ -306,7 +311,7 @@ test("filters the map and the list by country", async ({ page }, testInfo) => {
   });
 
   await page.getByRole("button", { name: "Clear filters" }).click();
-  await expect(page.locator("[data-location]")).toHaveCount(2);
+  await expect(locationCards(page)).toHaveCount(2);
 });
 
 test("filters by city", async ({ page }) => {
@@ -316,7 +321,7 @@ test("filters by city", async ({ page }) => {
 
   await page.getByLabel("Filter by city").selectOption({ label: "Miami" });
 
-  await expect(page.locator("[data-location]")).toHaveCount(1);
+  await expect(locationCards(page)).toHaveCount(1);
   await expect(page.getByRole("heading", { name: "Miami home" })).toBeVisible();
   await expect(page).toHaveURL(/city=miami/);
 });
@@ -326,7 +331,7 @@ test("restores filters from the url", async ({ page }) => {
   await page.goto("/?country=japan");
 
   await expect(page.getByLabel("Filter by country")).toHaveValue("japan");
-  await expect(page.locator("[data-location]")).toHaveCount(1);
+  await expect(locationCards(page)).toHaveCount(1);
   await expect(page.getByRole("heading", { name: "Tokyo office" })).toBeVisible();
 });
 
@@ -334,7 +339,7 @@ test("says when no location matches the filters", async ({ page }) => {
   await seed(page, [miami]);
   await page.goto("/?country=japan");
 
-  await expect(page.locator("[data-location]")).toHaveCount(0);
+  await expect(locationCards(page)).toHaveCount(0);
   await expect(
     page.getByText("No location matches the selected filters."),
   ).toBeVisible();
@@ -388,6 +393,12 @@ test("asks every source for the last seven days", async ({ page }) => {
   const weather = new URL(find("https://api.weather.gov/"));
   expect(weather.searchParams.get("point")).toBe("25.7617,-80.1918");
   expect(daysBefore(weather.searchParams.get("start"))).toBeCloseTo(7, 1);
+  // The National Weather Service answers 400 to timestamps with milliseconds.
+  for (const field of ["start", "end"]) {
+    expect(weather.searchParams.get(field)).toMatch(
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/,
+    );
+  }
 
   const usgs = new URL(find("https://earthquake.usgs.gov/"));
   expect(daysBefore(usgs.searchParams.get("starttime"))).toBeCloseTo(7, 1);
@@ -400,6 +411,134 @@ test("asks every source for the last seven days", async ({ page }) => {
 
   const eonet = new URL(find("https://eonet.gsfc.nasa.gov/"));
   expect(eonet.searchParams.get("days")).toBe("7");
+});
+
+test("keeps coordinates within the precision the weather service accepts", async ({
+  page,
+}) => {
+  const requested = [];
+  page.on("request", (request) => requested.push(request.url()));
+
+  await seed(page, [{ ...miami, lat: 25.76171234, lon: -80.19187654 }]);
+  await page.goto("/");
+  await expect(page.locator("[data-alert]")).toHaveCount(6);
+
+  const weather = new URL(
+    requested.find((url) => url.startsWith("https://api.weather.gov/")),
+  );
+  expect(weather.searchParams.get("point")).toBe("25.7617,-80.1919");
+});
+
+test("lists worldwide alerts once, without a weather card", async ({
+  page,
+}, testInfo) => {
+  await seed(page, [miami, tokyo]);
+  await page.goto("/");
+  await expect(locationCards(page)).toHaveCount(2);
+
+  const worldwide = page.locator("[data-location][data-worldwide]");
+  await expect(worldwide).toHaveCount(1);
+  await expect(worldwide.getByRole("heading", { name: "Worldwide" })).toBeVisible();
+  await expect(worldwide.locator("[data-alert]")).toHaveCount(1);
+  await expect(worldwide).toContainText("Geomagnetic K-index of 7");
+  await expect(worldwide.locator("[data-weather]")).toHaveCount(0);
+  await expect(worldwide).toContainText(
+    "1 alert in the last 7 days affecting every location.",
+  );
+
+  // The space weather alert is no longer repeated on each location.
+  await expect(
+    locationCards(page).getByText("Geomagnetic K-index of 7"),
+  ).toHaveCount(0);
+  await expect(page.locator("#map-summary")).toContainText(
+    "Including 1 alert affecting everywhere.",
+  );
+
+  await testInfo.attach("home-worldwide-card", {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: "image/png",
+  });
+});
+
+test("folds a location card away and remembers it", async ({
+  page,
+}, testInfo) => {
+  await seed(page, [miami, tokyo]);
+  await page.goto("/");
+  await expect(locationCards(page)).toHaveCount(2);
+
+  const miamiCard = locationCards(page).first();
+  const alerts = miamiCard.locator("[data-alerts]");
+  await expect(alerts).toBeVisible();
+
+  await miamiCard.getByRole("heading", { name: "Miami home" }).click();
+  await expect(alerts).toBeHidden();
+  // The summary still says what the folded card holds.
+  await expect(miamiCard).toContainText("5 alerts in the last 7 days");
+  // Every other card stays open.
+  await expect(
+    locationCards(page).last().locator("[data-alerts]"),
+  ).toBeVisible();
+
+  // Re-rendering the list keeps the card folded.
+  await page.getByRole("button", { name: "Refresh alerts" }).click();
+  await expect(alerts).toBeHidden();
+
+  await testInfo.attach("home-folded-location", {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: "image/png",
+  });
+
+  await miamiCard.getByRole("heading", { name: "Miami home" }).click();
+  await expect(alerts).toBeVisible();
+});
+
+test("filters by severity", async ({ page }, testInfo) => {
+  await seed(page, [miami, tokyo]);
+  await page.goto("/");
+  await expect(page.locator("[data-alert]")).toHaveCount(10);
+
+  await page.getByLabel("Filter by severity").selectOption({ label: "Extreme" });
+
+  await expect(page).toHaveURL(/severity=extreme/);
+  await expect(locationCards(page)).toHaveCount(2);
+  await expect(page.locator("[data-alert]")).toHaveCount(3);
+  await expect(page.locator('[data-alert]:not([data-severity="Extreme"])')).toHaveCount(
+    0,
+  );
+
+  await testInfo.attach("home-filtered-by-severity", {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: "image/png",
+  });
+
+  await page.getByLabel("Filter by severity").selectOption({ label: "Minor" });
+
+  // Only Tokyo has no minor alert, so its card and marker drop out.
+  await expect(locationCards(page)).toHaveCount(0);
+  await expect(page.locator(".map-marker")).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Clear filters" }).click();
+  await expect(page.locator("[data-alert]")).toHaveCount(10);
+});
+
+test("restores the severity filter from the url", async ({ page }) => {
+  await seed(page, [miami]);
+  await page.goto("/?severity=moderate");
+
+  await expect(page.getByLabel("Filter by severity")).toHaveValue("moderate");
+  await expect(page.locator("[data-alert]")).toHaveCount(1);
+  await expect(page.locator("[data-alert]")).toContainText("Flood Watch");
+});
+
+test("explains empty place filters", async ({ page }) => {
+  await seed(page, [{ ...miami, city: "", country: "" }]);
+  await page.goto("/");
+
+  await expect(page.getByLabel("Filter by country")).toBeDisabled();
+  await expect(
+    page.getByText("Add a city or country to a location on the"),
+  ).toBeVisible();
 });
 
 test("selects a location from its marker on the map", async ({ page }) => {
@@ -423,7 +562,7 @@ test("still shows alerts when one source fails", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.locator("[data-alert]")).toHaveCount(4);
-  await expect(page.locator("[data-alert-status]")).toContainText(
+  await expect(locationCards(page).locator("[data-alert-status]")).toContainText(
     "US National Weather Service: Request failed with status 500",
   );
 });
@@ -472,7 +611,7 @@ test("switches theme with the toggle and keeps the choice", async ({
   await page.emulateMedia({ colorScheme: "light" });
   await seed(page, [miami, tokyo]);
   await page.goto("/");
-  await expect(page.locator("[data-alert]")).toHaveCount(11);
+  await expect(page.locator("[data-alert]")).toHaveCount(10);
 
   await testInfo.attach("light-theme", {
     body: await page.screenshot({ fullPage: true }),

@@ -442,11 +442,63 @@ button.link {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .location-header h3 {
   margin: 0;
+}
+
+/* ------------------------------------------------- collapsible location */
+
+.location-details > summary {
+  cursor: pointer;
+  /* A flex summary drops the default marker, so the chevron below replaces it. */
+  list-style: none;
+  border-radius: 0.5rem;
+}
+
+.location-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.location-details > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.location-heading {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.location-chevron {
+  flex: 0 0 auto;
+  width: 0.6rem;
+  height: 0.6rem;
+  margin-top: 0.45rem;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease-in-out;
+}
+
+.location-details[open] > summary .location-chevron {
+  transform: rotate(45deg);
+}
+
+.location-body {
+  margin-top: 0.75rem;
+}
+
+.location[data-worldwide] {
+  border-style: dashed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .location-chevron {
+    transition: none;
+  }
 }
 
 .place {

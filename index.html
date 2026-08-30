@@ -86,10 +86,20 @@
               <option value="">All cities</option>
             </select>
           </div>
+          <div class="field">
+            <label for="filter-severity">Filter by severity</label>
+            <select id="filter-severity">
+              <option value="">All severities</option>
+            </select>
+          </div>
           <div class="actions">
             <button type="button" id="clear-filters">Clear filters</button>
           </div>
         </div>
+        <p id="filter-hint" class="note" hidden>
+          Add a city or country to a location on the
+          <a href="setup.html">setup page</a> to filter the map by place.
+        </p>
 
         <figure class="map">
           <svg
@@ -161,7 +171,8 @@
           <li>
             <strong>NOAA Space Weather Prediction Center</strong> &mdash;
             geomagnetic storms, solar radiation storms and radio blackouts that
-            affect the whole planet.
+            affect the whole planet. These are listed once, under
+            <em>Worldwide</em>, instead of on every location.
           </li>
         </ul>
         <p class="note">
@@ -208,31 +219,36 @@
 
     <template id="location-template">
       <li class="location" data-location>
-        <div class="location-header">
-          <div>
-            <h3 data-location-name></h3>
-            <p class="place" data-location-place></p>
-            <p class="coords" data-location-coords></p>
-          </div>
-          <span class="severity" data-location-severity></span>
-        </div>
+        <details class="location-details" data-location-details open>
+          <summary class="location-header" data-location-summary>
+            <span class="location-chevron" aria-hidden="true"></span>
+            <div class="location-heading">
+              <h3 data-location-name></h3>
+              <p class="place" data-location-place></p>
+              <p class="coords" data-location-coords></p>
+              <p class="status" data-alert-status>Loading alerts&hellip;</p>
+            </div>
+            <span class="severity" data-location-severity></span>
+          </summary>
 
-        <div class="weather" data-weather>
-          <div class="weather-figure" data-weather-icon></div>
-          <div class="weather-main">
-            <p class="weather-temp" data-weather-temp></p>
-            <p class="weather-condition" data-weather-condition></p>
-            <p class="weather-observed" data-weather-observed></p>
-          </div>
-          <dl class="weather-metrics" data-weather-metrics></dl>
-          <p class="weather-status" data-weather-status>Loading live weather&hellip;</p>
-        </div>
+          <div class="location-body">
+            <div class="weather" data-weather>
+              <div class="weather-figure" data-weather-icon></div>
+              <div class="weather-main">
+                <p class="weather-temp" data-weather-temp></p>
+                <p class="weather-condition" data-weather-condition></p>
+                <p class="weather-observed" data-weather-observed></p>
+              </div>
+              <dl class="weather-metrics" data-weather-metrics></dl>
+              <p class="weather-status" data-weather-status>Loading live weather&hellip;</p>
+            </div>
 
-        <p class="status" data-alert-status>Loading alerts&hellip;</p>
-        <p class="people-summary" data-people-summary></p>
-        <ul class="people-list" data-people></ul>
-        <p class="safety-summary" data-safety-summary hidden></p>
-        <ul class="alert-list" data-alerts></ul>
+            <p class="people-summary" data-people-summary></p>
+            <ul class="people-list" data-people></ul>
+            <p class="safety-summary" data-safety-summary hidden></p>
+            <ul class="alert-list" data-alerts></ul>
+          </div>
+        </details>
       </li>
     </template>
 
