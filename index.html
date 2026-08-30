@@ -6,7 +6,7 @@
     <title>5-Mins &mdash; disaster alerts before it is too late</title>
     <meta
       name="description"
-      content="Add locations and the people who should be warned, and see every disaster or catastrophe alert currently active for those locations."
+      content="Add locations and the people who should be warned, and see every disaster or catastrophe alert reported for those locations over the last 7 days."
     />
     <link rel="stylesheet" href="assets/styles.css" />
     <link
@@ -45,7 +45,7 @@
       </div>
       <p class="tagline">
         Add a location, add the people who must know, and see every disaster
-        alert currently active there.
+        alert reported there over the last 7 days.
       </p>
     </header>
 
@@ -123,15 +123,35 @@
 
       <section class="panel" aria-labelledby="sources-heading">
         <h2 id="sources-heading">Where the alerts come from</h2>
+        <p class="note">
+          Every source below is a free public feed that needs no account or API
+          key. Alerts cover the last 7 days for each location.
+        </p>
         <ul class="sources">
           <li>
-            <strong>US National Weather Service</strong> &mdash; active warnings
-            and watches (hurricane, tornado, flood, wildfire, winter storm,
-            tsunami and more) for locations in the United States.
+            <strong>US National Weather Service</strong> &mdash; warnings and
+            watches (hurricane, tornado, flood, wildfire, winter storm, tsunami
+            and more) for locations in the United States.
           </li>
           <li>
             <strong>USGS Earthquake Hazards Program</strong> &mdash; significant
             earthquakes near the location, worldwide.
+          </li>
+          <li>
+            <strong>GDACS global disaster alerts</strong> &mdash; the European
+            Commission and United Nations multi-hazard system: earthquakes,
+            tropical cyclones, floods, volcanoes, droughts and wildfires,
+            worldwide.
+          </li>
+          <li>
+            <strong>NASA EONET natural events</strong> &mdash; ongoing wildfires,
+            severe storms, volcanic activity, floods and other natural events,
+            worldwide.
+          </li>
+          <li>
+            <strong>NOAA Space Weather Prediction Center</strong> &mdash;
+            geomagnetic storms, solar radiation storms and radio blackouts that
+            affect the whole planet.
           </li>
         </ul>
         <p class="note">
@@ -192,7 +212,7 @@
           </div>
 
           <div class="alerts">
-            <h4>Active alerts</h4>
+            <h4 data-alert-heading>Alerts</h4>
             <p class="status" data-alert-status>Loading alerts&hellip;</p>
             <ul class="alert-list" data-alerts></ul>
           </div>

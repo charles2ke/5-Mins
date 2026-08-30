@@ -4,8 +4,8 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
 
 5-Mins is a small static website where you add the **locations** you care about
 and the **people** who must be warned about each of them. For every location the
-site pulls in all the disaster and catastrophe alerts that are currently
-available for those coordinates.
+site pulls in all the disaster and catastrophe alerts reported for those
+coordinates over the last 7 days.
 
 **Live site:** https://charles2ke.github.io/5-Mins/ (published automatically from
 `main`).
@@ -17,10 +17,10 @@ searchable and the coordinates are filled in for you:
 
 ![The location name field showing city suggestions for "Miam", with Miami, Miami Beach, Miami Gardens and Miami Lakes listed below the input](docs/images/city-autocomplete.png)
 
-Each location lists the people to warn next to every alert that is currently
-active there, most severe first:
+Each location lists the people to warn next to every alert reported there in
+the last 7 days, most severe first:
 
-![A saved Miami location with one person to alert and three active alerts: an extreme hurricane warning, a severe earthquake and a moderate flood watch](docs/images/locations-and-alerts.png)
+![A saved Miami location with one person to alert and six alerts from the last 7 days: an extreme hurricane warning, a severe earthquake, a severe GDACS flood alert, a severe space weather alert, a moderate flood watch and a wildfire tracked by NASA EONET](docs/images/locations-and-alerts.png)
 
 The site follows your system's colour scheme, and the header toggle pins light
 or dark for good:
@@ -38,8 +38,9 @@ or dark for good:
   and longitude of the city you choose.
 - Add and remove the people who should be alerted for each location, with an
   email address or phone number for each.
-- See every active alert for a location, sorted with the most severe first and
-  colour coded by severity (Extreme, Severe, Moderate, Minor).
+- See every alert reported for a location over the last **7 days**, sorted with
+  the most severe first and colour coded by severity (Extreme, Severe, Moderate,
+  Minor).
 - Refresh all alerts on demand.
 - Dark and light themes: the site follows the system colour scheme, and the
   header toggle pins a theme that is remembered on the next visit.
@@ -50,11 +51,15 @@ or dark for good:
 
 | Source | Coverage |
 | --- | --- |
-| [US National Weather Service](https://www.weather.gov/documentation/services-web-api) | All active warnings, watches and advisories for a US point: hurricanes, tornadoes, floods, wildfires, tsunamis, winter storms, extreme heat and more. |
-| [USGS Earthquake Hazards Program](https://earthquake.usgs.gov/fdsnws/event/1/) | Earthquakes of magnitude 4.5 or greater within 300 km of the location in the last 24 hours, worldwide. |
+| [US National Weather Service](https://www.weather.gov/documentation/services-web-api) | All warnings, watches and advisories issued for a US point in the last 7 days: hurricanes, tornadoes, floods, wildfires, tsunamis, winter storms, extreme heat and more. |
+| [USGS Earthquake Hazards Program](https://earthquake.usgs.gov/fdsnws/event/1/) | Earthquakes of magnitude 4.5 or greater within 300 km of the location in the last 7 days, worldwide. |
+| [GDACS](https://www.gdacs.org/) | The European Commission and United Nations multi-hazard system: earthquakes, tropical cyclones, floods, volcanoes, droughts and wildfires within 1000 km of the location in the last 7 days, worldwide. |
+| [NASA EONET](https://eonet.gsfc.nasa.gov/) | Ongoing natural events — wildfires, severe storms, volcanic activity, floods, landslides and more — within 1000 km of the location and updated in the last 7 days, worldwide. |
+| [NOAA Space Weather Prediction Center](https://www.swpc.noaa.gov/products/alerts-watches-and-warnings) | Geomagnetic storm, solar radiation storm and radio blackout alerts, watches and warnings from the last 7 days. These affect the whole planet, so they are shown for every location. |
 
-Both feeds are public and need no API key. If one feed is unavailable, the
-alerts from the other are still shown along with an explanation.
+Every feed is public and needs no API key. Each one is queried independently, so
+if a feed is unavailable the alerts from the others are still shown along with
+an explanation.
 
 ## City search
 
