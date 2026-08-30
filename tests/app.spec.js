@@ -573,3 +573,183 @@ test("keeps the pinned light theme when the system asks for dark", async ({
     "rgb(241, 245, 249)",
   );
 });
+
+async function addPerson(page, name = "Ada Lovelace", contact = "ada@example.com") {
+  await page.getByLabel("Person name").fill(name);
+  await page.getByLabel("Email or phone").fill(contact);
+  await page.getByRole("button", { name: "Add person" }).click();
+}
+
+/** Empties every alert feed so a location has nothing to report. */
+async function stubNoAlerts(page) {
+  await page.route("https://api.weather.gov/**", (route) =>
+    route.fulfill({ json: { features: [] } }),
+  );
+  await page.route("https://earthquake.usgs.gov/**", (route) =>
+    route.fulfill({ json: { features: [] } }),
+  );
+  await page.route("https://www.gdacs.org/**", (route) =>
+    route.fulfill({ json: { type: "FeatureCollection", features: [] } }),
+  );
+  await page.route("https://eonet.gsfc.nasa.gov/**", (route) =>
+    route.fulfill({ json: { events: [] } }),
+  );
+  await page.route("https://services.swpc.noaa.gov/**", (route) =>
+    route.fulfill({ json: [] }),
+  );
+}
+
+test("lets people mark themselves safe while an alert is active", async ({
+  page,
+}, testInfo) => {
+  await addLocation(page);
+  await addPerson(page);
+  await addPerson(page, "Grace Hopper", "+1 555 0100");
+
+  await expect(page.locator("[data-safety-summary]")).toContainText(
+    "Safety check-in: 0 of 2 marked safe · 2 still to confirm.",
+  );
+
+  await page.getByRole("button", { name: "I'm safe: Ada Lovelace" }).click();
+
+  await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(1);
+  await expect(page.locator("[data-person-safety]").first()).toContainText(
+    "Safe ·",
+  );
+  await expect(page.locator("[data-safety-summary]")).toContainText(
+    "Safety check-in: 1 of 2 marked safe · 1 still to confirm.",
+  );
+  await expect(page.locator("[data-alert-status]")).toContainText(
+    "1 marked safe.",
+  );
+
+  await testInfo.attach("marked-safe", {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: "image/png",
+  });
+
+  await page.getByRole("button", { name: "I'm safe: Grace Hopper" }).click();
+  await expect(page.locator("[data-safety-summary]")).toContainText(
+    "Safety check-in: everyone (2) marked safe.",
+  );
+
+  await page
+    .getByRole("button", { name: "Undo safe: Ada Lovelace" })
+    .click();
+  await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(1);
+  await expect(page.locator("[data-safety-summary]")).toContainText(
+    "1 of 2 marked safe",
+  );
+});
+
+test("keeps a safe check-in after a reload", async ({ page }) => {
+  await addLocation(page);
+  await addPerson(page);
+  await page.getByRole("button", { name: "I'm safe: Ada Lovelace" }).click();
+
+  await page.reload();
+
+  await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(1);
+  await expect(page.locator("[data-safety-summary]")).toContainText(
+    "everyone (1) marked safe",
+  );
+});
+
+test("colours the safe check-in in both themes", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await addLocation(page);
+  await addPerson(page);
+  await page.getByRole("button", { name: "I'm safe: Ada Lovelace" }).click();
+
+  const safety = page.locator("[data-person-safety]");
+  await expect(safety).toHaveCSS("color", "rgb(21, 128, 61)");
+
+  await page.getByRole("switch", { name: "Dark mode" }).click();
+  await expect(safety).toHaveCSS("color", "rgb(74, 222, 128)");
+});
+
+test("does not offer a safety check-in without an active alert", async ({
+  page,
+}) => {
+  await stubNoAlerts(page);
+  await addLocation(page);
+  await addPerson(page);
+
+  await expect(page.locator("[data-alert-status]")).toContainText(
+    "No alerts in the last 7 days for this location.",
+  );
+  await expect(
+    page.getByRole("button", { name: "I'm safe: Ada Lovelace" }),
+  ).toBeHidden();
+  await expect(page.locator("[data-safety-summary]")).toBeHidden();
+});
+
+test("asks everyone to check in again when a new alert is triggered", async ({
+  page,
+}) => {
+  await addLocation(page);
+  await addPerson(page);
+  await page.getByRole("button", { name: "I'm safe: Ada Lovelace" }).click();
+  await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(1);
+
+  await page.getByRole("button", { name: "Refresh alerts" }).click();
+  await expect(page.locator("[data-alert-status]")).toContainText(
+    "1 marked safe.",
+  );
+
+  await page.route("https://api.weather.gov/**", (route) =>
+    route.fulfill({
+      json: {
+        features: [
+          {
+            properties: {
+              id: "https://api.weather.gov/alerts/urn:oid:test.3",
+              event: "Tornado Warning",
+              severity: "Extreme",
+              headline: "Tornado Warning issued for Miami-Dade",
+              areaDesc: "Miami-Dade, FL",
+              effective: new Date(Date.now() - HOUR).toISOString(),
+              expires: new Date(Date.now() + HOUR).toISOString(),
+            },
+          },
+        ],
+      },
+    }),
+  );
+  await page.getByRole("button", { name: "Refresh alerts" }).click();
+
+  await expect(page.locator("[data-alert]").first()).toContainText(
+    "Tornado Warning",
+  );
+  await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(0);
+  await expect(page.locator("[data-safety-summary]")).toContainText(
+    "0 of 1 marked safe",
+  );
+});
+
+test("keeps safe check-ins when a source fails and later recovers", async ({
+  page,
+}) => {
+  await addLocation(page);
+  await addPerson(page);
+  await page.getByRole("button", { name: "I'm safe: Ada Lovelace" }).click();
+  await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(1);
+
+  await page.unroute("https://api.weather.gov/**");
+  await page.route("https://api.weather.gov/**", (route) =>
+    route.fulfill({ status: 503, body: "unavailable" }),
+  );
+  await page.getByRole("button", { name: "Refresh alerts" }).click();
+  await expect(page.locator("[data-alert]")).toHaveCount(4);
+  await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(1);
+
+  await page.unroute("https://api.weather.gov/**");
+  await page.route("https://api.weather.gov/**", (route) =>
+    route.fulfill({ json: buildFeeds().weatherAlerts }),
+  );
+  await page.getByRole("button", { name: "Refresh alerts" }).click();
+
+  await expect(page.locator("[data-alert]")).toHaveCount(6);
+  await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(1);
+  await expect(page.locator("[data-alert-status]")).toContainText("1 marked safe.");
+});

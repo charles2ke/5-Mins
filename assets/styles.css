@@ -9,6 +9,8 @@
   --accent: #0369a1;
   --accent-text: #f8fafc;
   --danger: #b91c1c;
+  --safe: #15803d;
+  --safe-text: #f0fdf4;
   --extreme: #b91c1c;
   --severe: #c2410c;
   --moderate: #a16207;
@@ -31,6 +33,8 @@
     --accent: #38bdf8;
     --accent-text: #082f49;
     --danger: #f87171;
+    --safe: #4ade80;
+    --safe-text: #052e16;
     --extreme: #dc2626;
     --severe: #ea580c;
     --moderate: #ca8a04;
@@ -53,6 +57,8 @@
   --accent: #38bdf8;
   --accent-text: #082f49;
   --danger: #f87171;
+  --safe: #4ade80;
+  --safe-text: #052e16;
   --extreme: #dc2626;
   --severe: #ea580c;
   --moderate: #ca8a04;
@@ -360,6 +366,38 @@ button.link {
 .person .contact {
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+.person[data-safe="true"] {
+  border-bottom-color: var(--safe);
+}
+
+.person .safety {
+  color: var(--safe);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+button.safe {
+  border-color: var(--safe);
+  color: var(--safe);
+  padding: 0.2rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+button.safe:hover {
+  background: var(--safe);
+  color: var(--safe-text);
+}
+
+.safety-summary {
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.safety-summary[data-all-safe="true"] {
+  color: var(--safe);
 }
 
 .person-form {

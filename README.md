@@ -29,6 +29,10 @@ or dark for good:
 | --- | --- |
 | ![5-Mins in light mode: a white page with dark text, the Dark mode toggle switched off](docs/images/theme-light.png) | ![5-Mins in dark mode: a deep navy page with light text, the Dark mode toggle switched on](docs/images/theme-dark.png) |
 
+While an alert is active, everybody at the location can check in as safe:
+
+![The Miami location during an alert: Ada Lovelace is marked "Safe" with a timestamp and an undo button, Grace Hopper still has an "I'm safe" button, and the summary reads "Safety check-in: 1 of 2 marked safe · 1 still to confirm."](docs/images/safety-check-in.png)
+
 ## Features
 
 - Add any number of locations: type a city name and pick it from the
@@ -41,6 +45,10 @@ or dark for good:
 - See every alert reported for a location over the last **7 days**, sorted with
   the most severe first and colour coded by severity (Extreme, Severe, Moderate,
   Minor).
+- While an alert is active, each person can **mark themselves as safe** for that
+  location. The check-in is timestamped, can be undone, and a summary shows how
+  many people are still to confirm. When a new alert is triggered for the
+  location, the check-ins are cleared so everybody confirms again.
 - Refresh all alerts on demand.
 - Dark and light themes: the site follows the system colour scheme, and the
   header toggle pins a theme that is remembered on the next visit.
