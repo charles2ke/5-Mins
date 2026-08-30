@@ -431,3 +431,30 @@ test("asks everyone to check in again when a new alert is triggered", async ({
     "0 of 1 marked safe",
   );
 });
+
+test("keeps safe check-ins when a source fails and later recovers", async ({
+  page,
+}) => {
+  await addLocation(page);
+  await addPerson(page);
+  await page.getByRole("button", { name: "I'm safe: Ada Lovelace" }).click();
+  await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(1);
+
+  await page.unroute("https://api.weather.gov/**");
+  await page.route("https://api.weather.gov/**", (route) =>
+    route.fulfill({ status: 503, body: "unavailable" }),
+  );
+  await page.getByRole("button", { name: "Refresh alerts" }).click();
+  await expect(page.locator("[data-alert]")).toHaveCount(1);
+  await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(1);
+
+  await page.unroute("https://api.weather.gov/**");
+  await page.route("https://api.weather.gov/**", (route) =>
+    route.fulfill({ json: weatherAlerts }),
+  );
+  await page.getByRole("button", { name: "Refresh alerts" }).click();
+
+  await expect(page.locator("[data-alert]")).toHaveCount(3);
+  await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(1);
+  await expect(page.locator("[data-alert-status]")).toContainText("1 marked safe.");
+});
