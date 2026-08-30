@@ -102,10 +102,11 @@ function renderPeople(node, location) {
     const markSafeButton = item.querySelector("[data-mark-safe]");
     const undoSafeButton = item.querySelector("[data-undo-safe]");
     const checkedIn = Boolean(person.safeAt);
+    const showSafetyState = checkedIn && alerting;
 
-    item.dataset.safe = checkedIn ? "true" : "false";
-    safety.hidden = !checkedIn;
-    safety.textContent = checkedIn
+    item.dataset.safe = showSafetyState ? "true" : "false";
+    safety.hidden = !showSafetyState;
+    safety.textContent = showSafetyState
       ? `Safe · ${formatDate(person.safeAt) ?? "just now"}`
       : "";
 
@@ -117,7 +118,7 @@ function renderPeople(node, location) {
       renderPeople(node, location);
     });
 
-    undoSafeButton.hidden = !checkedIn;
+    undoSafeButton.hidden = !showSafetyState;
     undoSafeButton.setAttribute("aria-label", `Undo safe: ${person.name}`);
     undoSafeButton.addEventListener("click", () => {
       person.safeAt = null;
