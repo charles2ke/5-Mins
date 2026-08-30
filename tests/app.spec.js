@@ -280,6 +280,8 @@ test("picks a city suggestion with the keyboard", async ({ page }) => {
 test("says when no city matches and still allows a manual location", async ({
   page,
 }) => {
+  await stubCities(page, { results: [] });
+
   await page.getByLabel("Location name").fill("Zzzz");
   await expect(page.getByText("No cities match “Zzzz”.")).toBeVisible();
   await expect(page.getByRole("option")).toHaveCount(0);
