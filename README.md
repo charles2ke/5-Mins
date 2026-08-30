@@ -26,7 +26,7 @@ active there, most severe first:
 5-Mins installs as an app, with an install button in supported browsers and
 instructions for every other platform:
 
-![The "Install this app on your device" panel with an Install app button and instructions for Android, iPhone and iPad, Windows and Linux, and macOS](docs/images/install-app.png)
+![The 5-Mins page with an "Install this app on your device" panel at the bottom: an Install app button and instructions for Android, iPhone and iPad, Windows and Linux, and macOS](docs/images/install-panel.png)
 
 ## Features
 
