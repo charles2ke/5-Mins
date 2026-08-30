@@ -9,9 +9,10 @@
   <title>5-Mins</title>
   <!-- Full-bleed background so the icon also works as a maskable and Apple touch icon. -->
   <rect width="512" height="512" fill="#0f172a" />
-  <!-- Warning triangle, kept inside the maskable safe zone (centre circle, 80% of the width). -->
+  <!-- Warning triangle, kept inside the maskable safe zone: the centre circle
+       covering 80% of the width, stroke width included. -->
   <path
-    d="M256 120 L410 385 L102 385 Z"
+    d="M256 128 L401 378 L111 378 Z"
     fill="#38bdf8"
     stroke="#38bdf8"
     stroke-width="30"

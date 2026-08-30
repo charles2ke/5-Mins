@@ -80,7 +80,8 @@ if (
   globalThis.addEventListener("load", () => {
     navigator.serviceWorker
       // Resolved against this module so the app also works from a subfolder,
-      // such as the project page at /5-Mins/.
+      // such as the project page at /5-Mins/. The default scope is that same
+      // folder, which covers the whole app.
       .register(new URL("../../sw.js", import.meta.url))
       .catch(() => {
         // Offline support is a bonus: the app keeps working without it.
