@@ -22,6 +22,10 @@ active there, most severe first:
 
 ![A saved Miami location with one person to alert and three active alerts: an extreme hurricane warning, a severe earthquake and a moderate flood watch](docs/images/locations-and-alerts.png)
 
+While an alert is active, everybody at the location can check in as safe:
+
+![The Miami location during an alert: Ada Lovelace is marked "Safe" with a timestamp and an undo button, Grace Hopper still has an "I'm safe" button, and the summary reads "Safety check-in: 1 of 2 marked safe · 1 still to confirm."](docs/images/safety-check-in.png)
+
 ## Features
 
 - Add any number of locations: type a city name and pick it from the
