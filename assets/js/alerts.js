@@ -166,6 +166,8 @@ const NWS_COVERAGE = [
   { minLat: 47, maxLat: 56, minLon: 170, maxLon: 180 },
   // Hawaii.
   { minLat: 15, maxLat: 24, minLon: -163, maxLon: -152 },
+  // Puerto Rico and the US Virgin Islands.
+  { minLat: 17, maxLat: 19, minLon: -68, maxLon: -64 },
   // Guam and the Northern Mariana Islands.
   { minLat: 12, maxLat: 21, minLon: 143, maxLon: 147 },
   // American Samoa.
