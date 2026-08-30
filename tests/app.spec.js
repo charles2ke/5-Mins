@@ -198,7 +198,7 @@ test("lets people mark themselves safe while an alert is active", async ({
     "Safety check-in: 0 of 2 marked safe · 2 still to confirm.",
   );
 
-  await page.getByRole("button", { name: "Mark Ada Lovelace as safe" }).click();
+  await page.getByRole("button", { name: "I'm safe: Ada Lovelace" }).click();
 
   await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(1);
   await expect(page.locator("[data-person-safety]").first()).toContainText(
@@ -216,13 +216,13 @@ test("lets people mark themselves safe while an alert is active", async ({
     contentType: "image/png",
   });
 
-  await page.getByRole("button", { name: "Mark Grace Hopper as safe" }).click();
+  await page.getByRole("button", { name: "I'm safe: Grace Hopper" }).click();
   await expect(page.locator("[data-safety-summary]")).toContainText(
     "Safety check-in: everyone (2) marked safe.",
   );
 
   await page
-    .getByRole("button", { name: "Undo the safe check-in for Ada Lovelace" })
+    .getByRole("button", { name: "Undo safe: Ada Lovelace" })
     .click();
   await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(1);
   await expect(page.locator("[data-safety-summary]")).toContainText(
@@ -233,7 +233,7 @@ test("lets people mark themselves safe while an alert is active", async ({
 test("keeps a safe check-in after a reload", async ({ page }) => {
   await addLocation(page);
   await addPerson(page);
-  await page.getByRole("button", { name: "Mark Ada Lovelace as safe" }).click();
+  await page.getByRole("button", { name: "I'm safe: Ada Lovelace" }).click();
 
   await page.reload();
 
@@ -259,7 +259,7 @@ test("does not offer a safety check-in without an active alert", async ({
     "No active alerts for this location.",
   );
   await expect(
-    page.getByRole("button", { name: "Mark Ada Lovelace as safe" }),
+    page.getByRole("button", { name: "I'm safe: Ada Lovelace" }),
   ).toBeHidden();
   await expect(page.locator("[data-safety-summary]")).toBeHidden();
 });
@@ -269,7 +269,7 @@ test("asks everyone to check in again when a new alert is triggered", async ({
 }) => {
   await addLocation(page);
   await addPerson(page);
-  await page.getByRole("button", { name: "Mark Ada Lovelace as safe" }).click();
+  await page.getByRole("button", { name: "I'm safe: Ada Lovelace" }).click();
   await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(1);
 
   await page.getByRole("button", { name: "Refresh alerts" }).click();

@@ -106,7 +106,7 @@ function renderPeople(node, location) {
       : "";
 
     markSafeButton.hidden = checkedIn || !alerting;
-    markSafeButton.setAttribute("aria-label", `Mark ${person.name} as safe`);
+    markSafeButton.setAttribute("aria-label", `I'm safe: ${person.name}`);
     markSafeButton.addEventListener("click", () => {
       person.safeAt = new Date().toISOString();
       persist();
@@ -114,10 +114,7 @@ function renderPeople(node, location) {
     });
 
     undoSafeButton.hidden = !checkedIn;
-    undoSafeButton.setAttribute(
-      "aria-label",
-      `Undo the safe check-in for ${person.name}`,
-    );
+    undoSafeButton.setAttribute("aria-label", `Undo safe: ${person.name}`);
     undoSafeButton.addEventListener("click", () => {
       person.safeAt = null;
       persist();
@@ -164,18 +161,18 @@ function renderAlertStatus(node, location, { alerts, errors }) {
 
 /**
  * Clears the safety check-ins when an alert that was not seen before is
- * triggered, so that people confirm they are safe for the new event.
- * Returns nothing; the location is updated in place and persisted.
+ * triggered, so that people confirm they are safe for the new event. The
+ * location is updated in place and persisted when anything changed.
  */
 function syncSafetyCheckIns(location, { alerts, errors }) {
-  const ids = alerts.map((alert) => alert.id);
-  if (ids.length === 0 && errors.length > 0) {
+  const current = new Set(alerts.map((alert) => alert.id));
+  if (current.size === 0 && errors.length > 0) {
     // The feeds could not be read, so the known alerts are left untouched.
     return;
   }
 
   const known = new Set(location.alertIds);
-  const triggered = ids.some((id) => !known.has(id));
+  const triggered = [...current].some((id) => !known.has(id));
   let changed = false;
 
   if (triggered) {
@@ -187,11 +184,8 @@ function syncSafetyCheckIns(location, { alerts, errors }) {
     }
   }
 
-  if (
-    ids.length !== location.alertIds.length ||
-    ids.some((id, index) => id !== location.alertIds[index])
-  ) {
-    location.alertIds = ids;
+  if (triggered || current.size !== known.size) {
+    location.alertIds = [...current];
     changed = true;
   }
 
