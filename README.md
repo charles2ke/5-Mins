@@ -1,6 +1,6 @@
 # 5-Mins
 
-Provide users an alert before a catastrophe or disaster.
+Provide users an alert before a catastrophe or disaster. The crucial minutes to save lives. 
 
 5-Mins is a small static website where you add the **locations** you care about
 and the **people** who must be warned about each of them. For every location the
