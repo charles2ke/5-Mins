@@ -165,6 +165,12 @@
           </li>
         </ul>
         <p class="note">
+          The live weather card on each location shows the current conditions
+          from the
+          <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>
+          forecast API, another free, key-less feed.
+        </p>
+        <p class="note">
           Locations and people are stored only in this browser. Nothing is sent
           to a server. Map outlines come from
           <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener noreferrer">Natural Earth</a>
@@ -209,6 +215,17 @@
             <p class="coords" data-location-coords></p>
           </div>
           <span class="severity" data-location-severity></span>
+        </div>
+
+        <div class="weather" data-weather>
+          <div class="weather-figure" data-weather-icon></div>
+          <div class="weather-main">
+            <p class="weather-temp" data-weather-temp></p>
+            <p class="weather-condition" data-weather-condition></p>
+            <p class="weather-observed" data-weather-observed></p>
+          </div>
+          <dl class="weather-metrics" data-weather-metrics></dl>
+          <p class="weather-status" data-weather-status>Loading live weather&hellip;</p>
         </div>
 
         <p class="status" data-alert-status>Loading alerts&hellip;</p>

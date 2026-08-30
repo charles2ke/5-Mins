@@ -19,6 +19,9 @@ test.beforeEach(async ({ page }) => {
   await page.route("https://geocoding-api.open-meteo.com/**", (route) =>
     route.fulfill({ json: { results: [] } }),
   );
+  await page.route("https://api.open-meteo.com/**", (route) =>
+    route.fulfill({ json: { current: {}, daily: {} } }),
+  );
 });
 
 async function waitForServiceWorker(page) {

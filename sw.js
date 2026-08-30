@@ -6,7 +6,7 @@
  * connection. Alert feeds are always fetched from the network: a cached
  * disaster alert would be worse than no alert at all.
  */
-const CACHE_NAME = "5-mins-shell-v2";
+const CACHE_NAME = "5-mins-shell-v3";
 
 /** Everything needed to render the app without a network connection. */
 const APP_SHELL = [
@@ -26,6 +26,7 @@ const APP_SHELL = [
   "./assets/js/pwa.js",
   "./assets/js/store.js",
   "./assets/js/theme.js",
+  "./assets/js/weather.js",
   "./assets/icons/icon.svg",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",

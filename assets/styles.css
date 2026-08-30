@@ -25,6 +25,13 @@
   --map-graticule: #bcd8f1;
   --map-graticule-major: #9cbfe0;
   --map-marker-stroke: #ffffff;
+  --weather-bg: linear-gradient(135deg, #e0f2fe, #f8fafc);
+  --weather-sun: #f59e0b;
+  --weather-moon: #64748b;
+  --weather-cloud: #94a3b8;
+  --weather-rain: #0284c7;
+  --weather-snow: #cbd5e1;
+  --weather-bolt: #f59e0b;
 }
 
 /* Dark palette, used when the system asks for it and light is not pinned. */
@@ -55,6 +62,13 @@
     --map-graticule: #1c2b42;
     --map-graticule-major: #2f4363;
     --map-marker-stroke: #0b1220;
+    --weather-bg: linear-gradient(135deg, #16273f, #1e293b);
+    --weather-sun: #fbbf24;
+    --weather-moon: #cbd5e1;
+    --weather-cloud: #64748b;
+    --weather-rain: #38bdf8;
+    --weather-snow: #e2e8f0;
+    --weather-bolt: #fbbf24;
   }
 }
 
@@ -85,6 +99,13 @@
   --map-graticule: #1c2b42;
   --map-graticule-major: #2f4363;
   --map-marker-stroke: #0b1220;
+  --weather-bg: linear-gradient(135deg, #16273f, #1e293b);
+  --weather-sun: #fbbf24;
+  --weather-moon: #cbd5e1;
+  --weather-cloud: #64748b;
+  --weather-rain: #38bdf8;
+  --weather-snow: #e2e8f0;
+  --weather-bolt: #fbbf24;
 }
 
 * {
@@ -437,6 +458,121 @@ button.link {
   margin: 0.15rem 0 0;
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+/* --------------------------------------------------------- weather card */
+
+.weather {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin: 0.75rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--weather-bg);
+}
+
+.weather[data-rough="true"] {
+  border-color: var(--severe);
+}
+
+.weather-figure {
+  display: flex;
+}
+
+.weather-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+}
+
+.weather-sun {
+  fill: var(--weather-sun);
+}
+
+.weather-ray {
+  stroke: var(--weather-sun);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.weather-moon {
+  fill: var(--weather-moon);
+}
+
+.weather-cloud {
+  fill: var(--weather-cloud);
+}
+
+.weather-drop {
+  stroke: var(--weather-rain);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.weather-snow {
+  fill: var(--weather-snow);
+}
+
+.weather-fog {
+  stroke: var(--weather-cloud);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.weather-bolt {
+  fill: var(--weather-bolt);
+}
+
+.weather-main p {
+  margin: 0;
+}
+
+.weather-temp {
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.weather-condition {
+  font-size: 0.95rem;
+}
+
+.weather-observed,
+.weather-status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.weather-metrics {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+  gap: 0.35rem 0.75rem;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.weather-metrics > div {
+  min-width: 0;
+}
+
+.weather-metrics dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.weather-metrics dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.weather-status {
+  grid-column: 1 / -1;
 }
 
 .people-summary {
