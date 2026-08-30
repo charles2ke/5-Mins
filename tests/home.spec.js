@@ -261,9 +261,9 @@ test("maps every recent alert for every location", async ({
   await page.goto("/");
 
   await expect(page.locator(".map-marker")).toHaveCount(2);
-  await expect(page.locator("[data-alert]")).toHaveCount(10);
+  await expect(page.locator("[data-alert]")).toHaveCount(8);
   await expect(page.locator("#map-summary")).toContainText(
-    "10 alerts in the last 7 days across 2 locations",
+    "8 alerts in the last 7 days across 2 locations",
   );
 
   const cards = locationCards(page);
@@ -429,6 +429,33 @@ test("keeps coordinates within the precision the weather service accepts", async
   expect(weather.searchParams.get("point")).toBe("25.7617,-80.1919");
 });
 
+test("skips the US weather service outside its coverage", async ({ page }) => {
+  const requested = [];
+  page.on("request", (request) => requested.push(request.url()));
+
+  const dublin = {
+    id: "dublin",
+    name: "Dublin flat",
+    city: "Dublin",
+    country: "Ireland",
+    lat: 53.3498,
+    lon: -6.2603,
+    people: [],
+  };
+
+  await seed(page, [dublin]);
+  await page.goto("/");
+  await expect(locationCards(page)).toHaveCount(1);
+
+  // The feed answers 400 for points it cannot resolve to a US forecast zone.
+  expect(
+    requested.find((url) => url.startsWith("https://api.weather.gov/")),
+  ).toBeUndefined();
+  await expect(
+    locationCards(page).locator("[data-alert-status]"),
+  ).not.toContainText("US National Weather Service");
+});
+
 test("lists worldwide alerts once, without a weather card", async ({
   page,
 }, testInfo) => {
@@ -496,13 +523,13 @@ test("folds a location card away and remembers it", async ({
 test("filters by severity", async ({ page }, testInfo) => {
   await seed(page, [miami, tokyo]);
   await page.goto("/");
-  await expect(page.locator("[data-alert]")).toHaveCount(10);
+  await expect(page.locator("[data-alert]")).toHaveCount(8);
 
   await page.getByLabel("Filter by severity").selectOption(["extreme"]);
 
   await expect(page).toHaveURL(/severity=extreme/);
   await expect(locationCards(page)).toHaveCount(2);
-  await expect(page.locator("[data-alert]")).toHaveCount(3);
+  await expect(page.locator("[data-alert]")).toHaveCount(2);
   await expect(page.locator('[data-alert]:not([data-severity="Extreme"])')).toHaveCount(
     0,
   );
@@ -519,21 +546,21 @@ test("filters by severity", async ({ page }, testInfo) => {
   await expect(page.locator(".map-marker")).toHaveCount(0);
 
   await page.getByRole("button", { name: "Clear filters" }).click();
-  await expect(page.locator("[data-alert]")).toHaveCount(10);
+  await expect(page.locator("[data-alert]")).toHaveCount(8);
 });
 
 test("filters by several severities at once", async ({ page }, testInfo) => {
   await seed(page, [miami, tokyo]);
   await page.goto("/");
-  await expect(page.locator("[data-alert]")).toHaveCount(10);
+  await expect(page.locator("[data-alert]")).toHaveCount(8);
 
   await page
     .getByLabel("Filter by severity")
     .selectOption(["extreme", "moderate"]);
 
   await expect(page).toHaveURL(/severity=extreme%2Cmoderate/);
-  await expect(page.locator('[data-alert][data-severity="Extreme"]')).toHaveCount(3);
-  await expect(page.locator('[data-alert][data-severity="Moderate"]')).toHaveCount(2);
+  await expect(page.locator('[data-alert][data-severity="Extreme"]')).toHaveCount(2);
+  await expect(page.locator('[data-alert][data-severity="Moderate"]')).toHaveCount(1);
   await expect(
     page.locator(
       '[data-alert]:not([data-severity="Extreme"]):not([data-severity="Moderate"])',
@@ -547,7 +574,7 @@ test("filters by several severities at once", async ({ page }, testInfo) => {
 
   await page.getByRole("button", { name: "Clear filters" }).click();
   await expect(page.getByLabel("Filter by severity")).toHaveValues([]);
-  await expect(page.locator("[data-alert]")).toHaveCount(10);
+  await expect(page.locator("[data-alert]")).toHaveCount(8);
 });
 
 test("restores the severity filter from the url", async ({ page }) => {
@@ -656,7 +683,7 @@ test("switches theme with the toggle and keeps the choice", async ({
   await page.emulateMedia({ colorScheme: "light" });
   await seed(page, [miami, tokyo]);
   await page.goto("/");
-  await expect(page.locator("[data-alert]")).toHaveCount(10);
+  await expect(page.locator("[data-alert]")).toHaveCount(8);
 
   await testInfo.attach("light-theme", {
     body: await page.screenshot({ fullPage: true }),
