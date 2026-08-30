@@ -50,13 +50,7 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-self.addEventListener("message", (event) => {
-  if (event.data === "skip-waiting") {
-    self.skipWaiting();
-  }
-});
-
-async function store(cache, request, response) {
+async function cacheResponse(cache, request, response) {
   if (response.ok && response.type === "basic") {
     await cache.put(request, response.clone());
   }
@@ -71,7 +65,7 @@ async function staleWhileRevalidate(event) {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(event.request);
   const update = fetch(event.request).then((response) =>
-    store(cache, event.request, response),
+    cacheResponse(cache, event.request, response),
   );
 
   if (cached) {
@@ -86,7 +80,7 @@ async function networkFirst(event) {
   const cache = await caches.open(CACHE_NAME);
   try {
     return await fetch(event.request).then((response) =>
-      store(cache, event.request, response),
+      cacheResponse(cache, event.request, response),
     );
   } catch (error) {
     const cached =

@@ -57,7 +57,9 @@ The installed app runs full screen with its own icon, keeps working while
 offline (the last version of the app is cached on the device) and stores
 locations and people on that device only. Alerts themselves are always fetched
 live, so a stale warning is never shown. Browsers that cannot install web apps
-still open 5-Mins as an ordinary website.
+still open 5-Mins as an ordinary website — Firefox for Android, for example,
+adds it to the home screen from its own menu, and Firefox on the desktop keeps
+it as a normal tab.
 
 ## Alert sources
 
