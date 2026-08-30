@@ -13,6 +13,18 @@
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>&#9888;</text></svg>"
     />
+    <script>
+      // Pin the saved theme before the first paint so the page never flashes
+      // the wrong colours. Keep the key in sync with assets/js/theme.js.
+      try {
+        var savedTheme = localStorage.getItem("5-mins.theme.v1");
+        if (savedTheme === "light" || savedTheme === "dark") {
+          document.documentElement.dataset.theme = savedTheme;
+        }
+      } catch (error) {
+        // Storage unavailable: follow the system colour scheme instead.
+      }
+    </script>
   </head>
   <body>
     <header class="site-header">
@@ -23,25 +35,52 @@
           a disaster is heading their way.
         </p>
       </div>
-      <nav class="site-nav" aria-label="Main">
-        <a href="./">Home</a>
-        <a href="setup.html" class="current" aria-current="page">Setup</a>
-      </nav>
+      <div class="header-actions">
+        <nav class="site-nav" aria-label="Main">
+          <a href="./">Home</a>
+          <a href="setup.html" class="current" aria-current="page">Setup</a>
+        </nav>
+        <button
+          type="button"
+          id="theme-toggle"
+          class="theme-toggle"
+          role="switch"
+          aria-checked="false"
+        >
+          <span class="theme-toggle-track" aria-hidden="true"
+            ><span class="theme-toggle-thumb"></span
+          ></span>
+          Dark mode
+        </button>
+      </div>
     </header>
 
     <main>
       <section class="panel" aria-labelledby="add-location-heading">
         <h2 id="add-location-heading">Add a location</h2>
         <form id="location-form" class="form-grid" novalidate>
-          <div class="field">
+          <div class="field combobox">
             <label for="location-name">Location name</label>
             <input
               id="location-name"
               name="name"
               type="text"
-              placeholder="Home, Beach house, ..."
+              placeholder="Start typing a city, e.g. Miami"
+              autocomplete="off"
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded="false"
+              aria-controls="city-suggestions"
               required
             />
+            <ul
+              id="city-suggestions"
+              class="suggestions"
+              role="listbox"
+              aria-label="City suggestions"
+              hidden
+            ></ul>
+            <p id="city-status" class="hint" role="status" hidden></p>
           </div>
           <div class="field">
             <label for="location-city">City</label>
@@ -127,6 +166,10 @@
           Locations and people are stored only in this browser. Nothing is sent
           to a server.
         </p>
+        <p class="note">
+          City suggestions come from the Open-Meteo geocoding API, a free search
+          over the worldwide GeoNames city database.
+        </p>
       </section>
     </main>
 
@@ -186,6 +229,7 @@
       </li>
     </template>
 
+    <script type="module" src="assets/js/theme.js"></script>
     <script type="module" src="assets/js/setup.js"></script>
   </body>
 </html>

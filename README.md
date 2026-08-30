@@ -1,6 +1,6 @@
 # 5-Mins
 
-Provide users an alert before a catastrophe or disaster.
+Provide users an alert before a catastrophe or disaster. The crucial minutes to save lives. 
 
 5-Mins is a small static website with two pages:
 
@@ -29,11 +29,19 @@ Provide users an alert before a catastrophe or disaster.
 
 ### Setup page
 
-- Add any number of locations by name and coordinates, or use the browser's
-  "Use my location" button. City and country are optional and power the home
-  page filters.
+- Add any number of locations: type a city name and pick it from the
+  autocomplete, use the browser's "Use my location" button, or enter
+  coordinates by hand.
+- City suggestions cover every known city worldwide and fill in the latitude,
+  longitude, city and country of the city you choose, so the home page filters
+  work straight away.
 - Add and remove the people who should be alerted for each location, with an
   email address or phone number for each.
+
+### Everywhere
+
+- Dark and light themes: the site follows the system colour scheme, and the
+  header toggle pins a theme that is remembered on the next visit.
 - Locations and people are stored in the browser's `localStorage`, so they
   survive reloads and never leave your device.
 
@@ -56,9 +64,21 @@ cities and the filters are kept in the URL.*
 *Setup — add the locations you watch, with an optional city and country that
 power the home page filters.*
 
+![The location name field showing city suggestions for "Miam", with Miami, Miami Beach and Miami listed below the input](docs/images/city-autocomplete.png)
+
+*Setup — start typing a city and pick it from the suggestions; the coordinates,
+city and country are filled in for you.*
+
 ![Setup page showing a person added to the people to alert list for a location](docs/images/people-to-alert.png)
 
 *Setup — add the people who must be warned about each location.*
+
+The site follows your system's colour scheme, and the header toggle pins light
+or dark for good:
+
+| Light | Dark |
+| --- | --- |
+| ![The home page in light mode: a pale page with a light world map and the Dark mode toggle switched off](docs/images/theme-light.png) | ![The home page in dark mode: a deep navy page with a dark world map and the Dark mode toggle switched on](docs/images/theme-dark.png) |
 
 ## Alert sources
 
@@ -75,6 +95,15 @@ The world map outlines come from the
 are in the public domain. They are embedded as a simplified SVG path in
 `assets/js/world-land.js`, so the map needs no map tiles, no API key and no
 network access.
+
+## City search
+
+The location name field on the setup page is an autocomplete backed by the
+[Open-Meteo geocoding API](https://open-meteo.com/en/docs/geocoding-api), a
+free, key-less search over the worldwide GeoNames city database. Choosing a
+suggestion fills in the coordinates, city and country of that city. If the
+lookup is unavailable the field keeps working as a plain text box, so a
+location can always be added by entering coordinates manually.
 
 ## Running locally
 

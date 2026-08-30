@@ -1,3 +1,4 @@
+import { createCityAutocomplete } from "./autocomplete.js";
 import {
   loadLocations,
   normaliseLocation,
@@ -11,6 +12,9 @@ const locationFormError = document.querySelector("#location-form-error");
 const locationList = document.querySelector("#locations");
 const emptyState = document.querySelector("#empty-state");
 const useMyLocationButton = document.querySelector("#use-my-location");
+const locationNameInput = document.querySelector("#location-name");
+const citySuggestions = document.querySelector("#city-suggestions");
+const cityStatus = document.querySelector("#city-status");
 
 const locationTemplate = document.querySelector("#location-template");
 const personTemplate = document.querySelector("#person-template");
@@ -109,6 +113,21 @@ function render() {
   }
 }
 
+const cityAutocomplete = createCityAutocomplete({
+  input: locationNameInput,
+  list: citySuggestions,
+  status: cityStatus,
+  onSelect(city) {
+    locationForm.elements.lat.value = city.lat.toFixed(4);
+    locationForm.elements.lon.value = city.lon.toFixed(4);
+    // Fill the filter fields too, so a suggested city can be filtered on the
+    // home map without retyping it.
+    locationForm.elements.city.value = city.name;
+    locationForm.elements.country.value = city.country;
+    clearError(locationFormError);
+  },
+});
+
 locationForm.addEventListener("submit", (event) => {
   event.preventDefault();
   const data = new FormData(locationForm);
@@ -123,6 +142,7 @@ locationForm.addEventListener("submit", (event) => {
     locations.push(location);
     persist();
     locationForm.reset();
+    cityAutocomplete.reset();
     clearError(locationFormError);
     render();
   } catch (error) {

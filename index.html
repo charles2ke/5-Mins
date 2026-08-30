@@ -13,6 +13,18 @@
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>&#9888;</text></svg>"
     />
+    <script>
+      // Pin the saved theme before the first paint so the page never flashes
+      // the wrong colours. Keep the key in sync with assets/js/theme.js.
+      try {
+        var savedTheme = localStorage.getItem("5-mins.theme.v1");
+        if (savedTheme === "light" || savedTheme === "dark") {
+          document.documentElement.dataset.theme = savedTheme;
+        }
+      } catch (error) {
+        // Storage unavailable: follow the system colour scheme instead.
+      }
+    </script>
   </head>
   <body>
     <header class="site-header">
@@ -23,10 +35,24 @@
           on one world map.
         </p>
       </div>
-      <nav class="site-nav" aria-label="Main">
-        <a href="./" class="current" aria-current="page">Home</a>
-        <a href="setup.html">Setup</a>
-      </nav>
+      <div class="header-actions">
+        <nav class="site-nav" aria-label="Main">
+          <a href="./" class="current" aria-current="page">Home</a>
+          <a href="setup.html">Setup</a>
+        </nav>
+        <button
+          type="button"
+          id="theme-toggle"
+          class="theme-toggle"
+          role="switch"
+          aria-checked="false"
+        >
+          <span class="theme-toggle-track" aria-hidden="true"
+            ><span class="theme-toggle-thumb"></span
+          ></span>
+          Dark mode
+        </button>
+      </div>
     </header>
 
     <main>
@@ -113,6 +139,10 @@
           <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener noreferrer">Natural Earth</a>
           (public domain).
         </p>
+        <p class="note">
+          City suggestions come from the Open-Meteo geocoding API, a free search
+          over the worldwide GeoNames city database.
+        </p>
       </section>
     </main>
 
@@ -153,6 +183,7 @@
       </li>
     </template>
 
+    <script type="module" src="assets/js/theme.js"></script>
     <script type="module" src="assets/js/home.js"></script>
   </body>
 </html>

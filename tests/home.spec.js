@@ -221,3 +221,96 @@ test("refreshes every alert on demand", async ({ page }) => {
 
   await expect(page.locator("[data-alert]")).toHaveCount(1);
 });
+
+test("follows the system colour scheme by default", async ({ page }) => {
+  await seed(page, [miami]);
+  await page.goto("/");
+
+  await page.emulateMedia({ colorScheme: "light" });
+  await expect(page.locator("body")).toHaveCSS(
+    "background-color",
+    "rgb(241, 245, 249)",
+  );
+  await expect(page.getByRole("switch", { name: "Dark mode" })).toHaveAttribute(
+    "aria-checked",
+    "false",
+  );
+
+  await page.emulateMedia({ colorScheme: "dark" });
+  await expect(page.locator("body")).toHaveCSS(
+    "background-color",
+    "rgb(15, 23, 42)",
+  );
+  await expect(page.getByRole("switch", { name: "Dark mode" })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
+});
+
+test("switches theme with the toggle and keeps the choice", async ({
+  page,
+}, testInfo) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await seed(page, [miami, tokyo]);
+  await page.goto("/");
+  await expect(page.locator("[data-alert]")).toHaveCount(6);
+
+  await testInfo.attach("light-theme", {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: "image/png",
+  });
+
+  const toggle = page.getByRole("switch", { name: "Dark mode" });
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-checked", "true");
+  await expect(page.locator("body")).toHaveCSS(
+    "background-color",
+    "rgb(15, 23, 42)",
+  );
+
+  await testInfo.attach("dark-theme", {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: "image/png",
+  });
+
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(page.locator("body")).toHaveCSS(
+    "background-color",
+    "rgb(15, 23, 42)",
+  );
+
+  await page.getByRole("switch", { name: "Dark mode" }).click();
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await expect(page.locator("body")).toHaveCSS(
+    "background-color",
+    "rgb(241, 245, 249)",
+  );
+});
+
+test("keeps the pinned light theme when the system asks for dark", async ({
+  page,
+}) => {
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.goto("/");
+  await page.getByRole("switch", { name: "Dark mode" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await expect(page.locator("body")).toHaveCSS(
+    "background-color",
+    "rgb(241, 245, 249)",
+  );
+});
+
+test("carries the pinned theme over to the setup page", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/");
+  await page.getByRole("switch", { name: "Dark mode" }).click();
+
+  await page.getByRole("link", { name: "Setup" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(page.getByRole("switch", { name: "Dark mode" })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
+});
