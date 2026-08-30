@@ -27,15 +27,28 @@
       <section class="panel" aria-labelledby="add-location-heading">
         <h2 id="add-location-heading">Add a location</h2>
         <form id="location-form" class="form-grid" novalidate>
-          <div class="field">
+          <div class="field combobox">
             <label for="location-name">Location name</label>
             <input
               id="location-name"
               name="name"
               type="text"
-              placeholder="Home, Miami FL, ..."
+              placeholder="Start typing a city, e.g. Miami"
+              autocomplete="off"
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded="false"
+              aria-controls="city-suggestions"
               required
             />
+            <ul
+              id="city-suggestions"
+              class="suggestions"
+              role="listbox"
+              aria-label="City suggestions"
+              hidden
+            ></ul>
+            <p id="city-status" class="hint" role="status" hidden></p>
           </div>
           <div class="field">
             <label for="location-lat">Latitude</label>
@@ -98,6 +111,10 @@
         <p class="note">
           Locations and people are stored only in this browser. Nothing is sent
           to a server.
+        </p>
+        <p class="note">
+          City suggestions come from the Open-Meteo geocoding API, a free search
+          over the worldwide GeoNames city database.
         </p>
       </section>
     </main>
