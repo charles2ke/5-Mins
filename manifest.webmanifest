@@ -1,7 +1,7 @@
 {
   "name": "5-Mins — disaster alerts before it is too late",
   "short_name": "5-Mins",
-  "description": "Add the locations you care about and the people who must be warned, and see every disaster or catastrophe alert currently active for those locations.",
+  "description": "Add the locations you care about and the people who must be warned, and see every disaster or catastrophe alert reported for those locations over the last 7 days.",
   "lang": "en",
   "dir": "ltr",
   "start_url": "./",

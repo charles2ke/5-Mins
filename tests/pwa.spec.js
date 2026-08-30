@@ -70,10 +70,16 @@ test("carries the meta tags iOS, iPadOS and macOS need", async ({
     "content",
     /viewport-fit=cover/,
   );
-  await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute(
-    "content",
-    "#0f172a",
-  );
+  await expect(
+    page.locator(
+      'meta[name="theme-color"][media="(prefers-color-scheme: dark)"]',
+    ),
+  ).toHaveAttribute("content", "#0f172a");
+  await expect(
+    page.locator(
+      'meta[name="theme-color"][media="(prefers-color-scheme: light)"]',
+    ),
+  ).toHaveAttribute("content", "#f1f5f9");
   await expect(
     page.locator('meta[name="apple-mobile-web-app-capable"]'),
   ).toHaveAttribute("content", "yes");
