@@ -7,6 +7,15 @@ test.beforeEach(async ({ page }) => {
   await page.route("https://earthquake.usgs.gov/**", (route) =>
     route.fulfill({ json: { features: [] } }),
   );
+  await page.route("https://www.gdacs.org/**", (route) =>
+    route.fulfill({ json: { features: [] } }),
+  );
+  await page.route("https://eonet.gsfc.nasa.gov/**", (route) =>
+    route.fulfill({ json: { events: [] } }),
+  );
+  await page.route("https://services.swpc.noaa.gov/**", (route) =>
+    route.fulfill({ json: [] }),
+  );
   await page.route("https://geocoding-api.open-meteo.com/**", (route) =>
     route.fulfill({ json: { results: [] } }),
   );
