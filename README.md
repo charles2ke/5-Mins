@@ -26,8 +26,8 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
   location in the list below the map.
 - A **live weather card** for every location: current temperature, a drawn
   condition icon, what it feels like, today's high and low, wind, humidity and
-  precipitation, refreshed with the alerts. Rough weather (thunderstorms, snow
-  or strong wind) is highlighted on the card.
+  precipitation, refreshed with the alerts. Rough weather (thunderstorms, snow,
+  sleet or strong wind) is highlighted on the card.
 - Every alert reported for every location over the last **7 days**, sorted with
   the most severe first and colour coded by severity (Extreme, Severe, Moderate,
   Minor).

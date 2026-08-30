@@ -583,6 +583,7 @@ function loadAllWeather() {
       error: null,
     });
   }
+  render();
   return Promise.all(locations.map(loadWeatherFor));
 }
 

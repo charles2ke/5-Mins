@@ -614,11 +614,22 @@ test("refreshes the live weather on demand", async ({ page }) => {
   const colder = buildWeather();
   colder.current.temperature_2m = 4.2;
   colder.current.weather_code = 71;
-  await page.route("https://api.open-meteo.com/**", (route) =>
-    route.fulfill({ json: colder }),
-  );
+  let fulfillWeather;
+  const weatherResponse = new Promise((resolve) => {
+    fulfillWeather = resolve;
+  });
+  await page.unroute("https://api.open-meteo.com/**");
+  await page.route("https://api.open-meteo.com/**", async (route) => {
+    await weatherResponse;
+    await route.fulfill({ json: colder });
+  });
   await page.getByRole("button", { name: "Refresh alerts" }).click();
 
+  await expect(page.locator("[data-weather]")).toHaveAttribute(
+    "data-state",
+    "loading",
+  );
+  fulfillWeather();
   await expect(page.locator("[data-weather-temp]")).toHaveText("4°C");
   await expect(page.locator("[data-weather-condition]")).toHaveText("Light snow");
 });
