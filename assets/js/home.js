@@ -1,4 +1,4 @@
-import { fetchAlerts, SEVERITY_ORDER } from "./alerts.js";
+import { ALERT_WINDOW_DAYS, fetchAlerts, SEVERITY_ORDER } from "./alerts.js";
 import { describePlace, matchesFilters, placeKey, placeOptions } from "./places.js";
 import { loadLocations } from "./store.js";
 import { drawGraticule, drawLand, drawMarkers } from "./worldmap.js";
@@ -167,7 +167,7 @@ function renderMap(shown) {
     const label = `${location.name}${place ? ` (${place})` : ""} — ${
       result.status === "loading"
         ? "loading alerts"
-        : pluralise(alertCount, "active alert", "active alerts")
+        : pluralise(alertCount, "alert", "alerts")
     }`;
     return {
       id: location.id,
@@ -203,7 +203,7 @@ function renderSummary(shown) {
   ).length;
 
   parts.push(
-    `${pluralise(totalAlerts, "active alert", "active alerts")} across ${pluralise(
+    `${pluralise(totalAlerts, "alert", "alerts")} in the last ${ALERT_WINDOW_DAYS} days across ${pluralise(
       affected,
       "location",
       "locations",
@@ -296,10 +296,12 @@ function renderLocation(location) {
   } else {
     const messages = [];
     if (result.alerts.length === 0) {
-      messages.push("No active alerts for this location.");
+      messages.push(
+        `No alerts in the last ${ALERT_WINDOW_DAYS} days for this location.`,
+      );
     } else {
       messages.push(
-        `${pluralise(result.alerts.length, "active alert", "active alerts")} · ${pluralise(
+        `${pluralise(result.alerts.length, "alert", "alerts")} in the last ${ALERT_WINDOW_DAYS} days · ${pluralise(
           location.people.length,
           "person",
           "people",

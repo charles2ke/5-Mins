@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>5-Mins &mdash; world map of current disaster alerts</title>
+    <title>5-Mins &mdash; world map of recent disaster alerts</title>
     <meta
       name="description"
-      content="A world map of every disaster or catastrophe alert currently active for the locations you watch, with country and city filters."
+      content="A world map of every disaster or catastrophe alert reported for the locations you watch over the last 7 days, with country and city filters."
     />
     <link rel="stylesheet" href="assets/styles.css" />
     <link
@@ -31,8 +31,8 @@
       <div class="brand">
         <h1>5-Mins</h1>
         <p class="tagline">
-          Every disaster alert currently active across the places you watch,
-          on one world map.
+          Every disaster alert from the last 7 days across the places you
+          watch, on one world map.
         </p>
       </div>
       <div class="header-actions">
@@ -58,7 +58,7 @@
     <main>
       <section class="panel" aria-labelledby="map-heading">
         <div class="panel-header">
-          <h2 id="map-heading">World map of current alerts</h2>
+          <h2 id="map-heading">World map of recent alerts</h2>
           <button type="button" id="refresh-alerts">Refresh alerts</button>
         </div>
 
@@ -103,7 +103,7 @@
           <li data-severity="Severe">Severe</li>
           <li data-severity="Moderate">Moderate</li>
           <li data-severity="Minor">Minor</li>
-          <li data-severity="None">No active alert</li>
+          <li data-severity="None">No alerts</li>
         </ul>
       </section>
 
@@ -122,15 +122,35 @@
 
       <section class="panel" aria-labelledby="sources-heading">
         <h2 id="sources-heading">Where the alerts come from</h2>
+        <p class="note">
+          Every source below is a free public feed that needs no account or API
+          key. Alerts cover the last 7 days for each location.
+        </p>
         <ul class="sources">
           <li>
-            <strong>US National Weather Service</strong> &mdash; active warnings
-            and watches (hurricane, tornado, flood, wildfire, winter storm,
-            tsunami and more) for locations in the United States.
+            <strong>US National Weather Service</strong> &mdash; warnings and
+            watches (hurricane, tornado, flood, wildfire, winter storm, tsunami
+            and more) for locations in the United States.
           </li>
           <li>
             <strong>USGS Earthquake Hazards Program</strong> &mdash; significant
             earthquakes near the location, worldwide.
+          </li>
+          <li>
+            <strong>GDACS global disaster alerts</strong> &mdash; the European
+            Commission and United Nations multi-hazard system: earthquakes,
+            tropical cyclones, floods, volcanoes, droughts and wildfires,
+            worldwide.
+          </li>
+          <li>
+            <strong>NASA EONET natural events</strong> &mdash; ongoing wildfires,
+            severe storms, volcanic activity, floods and other natural events,
+            worldwide.
+          </li>
+          <li>
+            <strong>NOAA Space Weather Prediction Center</strong> &mdash;
+            geomagnetic storms, solar radiation storms and radio blackouts that
+            affect the whole planet.
           </li>
         </ul>
         <p class="note">

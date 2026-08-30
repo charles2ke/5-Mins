@@ -173,7 +173,7 @@ test("removes a location", async ({ page }) => {
 test("links back to the home page map", async ({ page }) => {
   await page.getByRole("link", { name: "Home" }).click();
   await expect(
-    page.getByRole("heading", { name: "World map of current alerts" }),
+    page.getByRole("heading", { name: "World map of recent alerts" }),
   ).toBeVisible();
 });
 

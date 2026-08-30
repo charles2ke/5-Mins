@@ -4,8 +4,9 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
 
 5-Mins is a small static website with two pages:
 
-- **Home** — a world map of every disaster or catastrophe alert currently
-  active for the locations you watch, with filters by country and city.
+- **Home** — a world map of every disaster or catastrophe alert reported for
+  the locations you watch over the last 7 days, with filters by country and
+  city.
 - **Setup** — where you add the **locations** you care about and the **people**
   who must be warned about each of them.
 
@@ -17,14 +18,15 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
 ### Home page
 
 - World map with one marker per location, coloured by the most severe alert
-  currently active there and sized by how many alerts there are.
+  reported there in the last 7 days and sized by how many alerts there are.
 - Filter the map and the list by **country** or by **city**. The city filter
   only offers cities from the selected country, and both filters are kept in the
   URL (`?country=japan&city=tokyo`) so a filtered view can be shared.
 - Click (or focus and press <kbd>Enter</kbd> on) a marker to highlight that
   location in the list below the map.
-- Every alert for every location, sorted with the most severe first and colour
-  coded by severity (Extreme, Severe, Moderate, Minor).
+- Every alert reported for every location over the last **7 days**, sorted with
+  the most severe first and colour coded by severity (Extreme, Severe, Moderate,
+  Minor).
 - Refresh all alerts on demand.
 
 ### Setup page
@@ -50,9 +52,9 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
 These are captured by the Playwright suite, so they always match the current
 behaviour of the site.
 
-![Home page showing the world map with markers for Miami and Tokyo and every active alert listed below it](docs/images/home-world-map.png)
+![Home page showing the world map with markers for Miami and Tokyo and every alert from the last 7 days listed below it](docs/images/home-world-map.png)
 
-*Home — every current alert on the world map, with the alert list underneath.*
+*Home — every alert from the last 7 days on the world map, with the alert list underneath.*
 
 ![Home page filtered to Japan, showing a single marker and only the Tokyo location](docs/images/home-filtered-by-country.png)
 
@@ -84,11 +86,15 @@ or dark for good:
 
 | Source | Coverage |
 | --- | --- |
-| [US National Weather Service](https://www.weather.gov/documentation/services-web-api) | All active warnings, watches and advisories for a US point: hurricanes, tornadoes, floods, wildfires, tsunamis, winter storms, extreme heat and more. |
-| [USGS Earthquake Hazards Program](https://earthquake.usgs.gov/fdsnws/event/1/) | Earthquakes of magnitude 4.5 or greater within 300 km of the location in the last 24 hours, worldwide. |
+| [US National Weather Service](https://www.weather.gov/documentation/services-web-api) | All warnings, watches and advisories issued for a US point in the last 7 days: hurricanes, tornadoes, floods, wildfires, tsunamis, winter storms, extreme heat and more. |
+| [USGS Earthquake Hazards Program](https://earthquake.usgs.gov/fdsnws/event/1/) | Earthquakes of magnitude 4.5 or greater within 300 km of the location in the last 7 days, worldwide. |
+| [GDACS](https://www.gdacs.org/) | The European Commission and United Nations multi-hazard system: earthquakes, tropical cyclones, floods, volcanoes, droughts and wildfires within 1000 km of the location in the last 7 days, worldwide. |
+| [NASA EONET](https://eonet.gsfc.nasa.gov/) | Ongoing natural events — wildfires, severe storms, volcanic activity, floods, landslides and more — within 1000 km of the location and updated in the last 7 days, worldwide. |
+| [NOAA Space Weather Prediction Center](https://www.swpc.noaa.gov/products/alerts-watches-and-warnings) | Geomagnetic storm, solar radiation storm and radio blackout alerts, watches and warnings from the last 7 days. These affect the whole planet, so they are shown for every location. |
 
-Both feeds are public and need no API key. If one feed is unavailable, the
-alerts from the other are still shown along with an explanation.
+Every feed is public and needs no API key. Each one is queried independently, so
+if a feed is unavailable the alerts from the others are still shown along with
+an explanation.
 
 The world map outlines come from the
 [Natural Earth](https://www.naturalearthdata.com/) 1:110m land vectors, which
