@@ -1,6 +1,6 @@
 # 5-Mins
 
-Provide users an alert before a catastrophe or disaster.
+Provide users an alert before a catastrophe or disaster. The crucial minutes to save lives. 
 
 5-Mins is a small static website where you add the **locations** you care about
 and the **people** who must be warned about each of them. For every location the
@@ -10,10 +10,25 @@ coordinates over the last 7 days.
 **Live site:** https://charles2ke.github.io/5-Mins/ (published automatically from
 `main`).
 
+## Screenshots
+
+Start typing a city and pick it from the suggestions — every known city is
+searchable and the coordinates are filled in for you:
+
+![The location name field showing city suggestions for "Miam", with Miami, Miami Beach, Miami Gardens and Miami Lakes listed below the input](docs/images/city-autocomplete.png)
+
+Each location lists the people to warn next to every alert that is currently
+active there, most severe first:
+
+![A saved Miami location with one person to alert and three active alerts: an extreme hurricane warning, a severe earthquake and a moderate flood watch](docs/images/locations-and-alerts.png)
+
 ## Features
 
-- Add any number of locations by name and coordinates, or use the browser's
-  "Use my location" button.
+- Add any number of locations: type a city name and pick it from the
+  autocomplete, use the browser's "Use my location" button, or enter
+  coordinates by hand.
+- City suggestions cover every known city worldwide and fill in the latitude
+  and longitude of the city you choose.
 - Add and remove the people who should be alerted for each location, with an
   email address or phone number for each.
 - See every alert reported for a location over the last **7 days**, sorted with
@@ -36,6 +51,15 @@ coordinates over the last 7 days.
 Every feed is public and needs no API key. Each one is queried independently, so
 if a feed is unavailable the alerts from the others are still shown along with
 an explanation.
+
+## City search
+
+The location name field is an autocomplete backed by the
+[Open-Meteo geocoding API](https://open-meteo.com/en/docs/geocoding-api), a
+free, key-less search over the worldwide GeoNames city database. Choosing a
+suggestion fills in the coordinates of that city. If the lookup is unavailable
+the field keeps working as a plain text box, so a location can always be added
+by entering coordinates manually.
 
 ## Running locally
 
