@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>5-Mins &mdash; where the alerts come from</title>
+    <meta
+      name="description"
+      content="The free public feeds behind 5-Mins: the US National Weather Service, USGS, GDACS, NASA EONET and the NOAA Space Weather Prediction Center."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f1f5f9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
+    <link rel="stylesheet" href="assets/styles.css" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
+    <link rel="icon" href="assets/icons/icon-192.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+    <meta name="application-name" content="5-Mins" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="5-Mins" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <script>
+      // Pin the saved theme before the first paint so the page never flashes
+      // the wrong colours. Keep the key in sync with assets/js/theme.js.
+      try {
+        var savedTheme = localStorage.getItem("5-mins.theme.v1");
+        if (savedTheme === "light" || savedTheme === "dark") {
+          document.documentElement.dataset.theme = savedTheme;
+        }
+      } catch (error) {
+        // Storage unavailable: follow the system colour scheme instead.
+      }
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="brand">
+        <h1>5-Mins</h1>
+        <p class="tagline">
+          The free public feeds behind every alert on the map, and what
+          happens to the data you enter.
+        </p>
+      </div>
+      <div class="header-actions">
+        <nav class="site-nav" aria-label="Main">
+          <a href="./">Home</a>
+          <a href="setup.html">Setup</a>
+          <a href="sources.html" class="current" aria-current="page">Sources</a>
+          <a href="install.html">Install</a>
+        </nav>
+        <button
+          type="button"
+          id="theme-toggle"
+          class="theme-toggle"
+          role="switch"
+          aria-checked="false"
+        >
+          <span class="theme-toggle-track" aria-hidden="true"
+            ><span class="theme-toggle-thumb"></span
+          ></span>
+          Dark mode
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel" aria-labelledby="sources-heading">
+        <h2 id="sources-heading">Where the alerts come from</h2>
+        <p class="note">
+          Every source below is a free public feed that needs no account or API
+          key. Alerts cover the last 7 days for each location.
+        </p>
+        <ul class="sources">
+          <li>
+            <strong>US National Weather Service</strong> &mdash; warnings and
+            watches (hurricane, tornado, flood, wildfire, winter storm, tsunami
+            and more) for locations in the United States.
+          </li>
+          <li>
+            <strong>USGS Earthquake Hazards Program</strong> &mdash; significant
+            earthquakes near the location, worldwide.
+          </li>
+          <li>
+            <strong>GDACS global disaster alerts</strong> &mdash; the European
+            Commission and United Nations multi-hazard system: earthquakes,
+            tropical cyclones, floods, volcanoes, droughts and wildfires,
+            worldwide.
+          </li>
+          <li>
+            <strong>NASA EONET natural events</strong> &mdash; ongoing wildfires,
+            severe storms, volcanic activity, floods and other natural events,
+            worldwide.
+          </li>
+          <li>
+            <strong>NOAA Space Weather Prediction Center</strong> &mdash;
+            geomagnetic storms, solar radiation storms and radio blackouts that
+            affect the whole planet. These are listed once, under
+            <em>Worldwide</em>, instead of on every location.
+          </li>
+        </ul>
+        <p class="note">
+          The live weather card on each location shows the current conditions
+          from the
+          <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>
+          forecast API, another free, key-less feed.
+        </p>
+        <p class="note">
+          Locations and people are stored only in this browser. Nothing is sent
+          to a server. Map outlines come from
+          <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener noreferrer">Natural Earth</a>
+          (public domain).
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        5-Mins is an informational tool. Always follow instructions from
+        your local emergency services.
+      </p>
+    </footer>
+
+    <script type="module" src="assets/js/theme.js"></script>
+    <script type="module" src="assets/js/pwa.js"></script>
+  </body>
+</html>

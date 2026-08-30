@@ -2,12 +2,13 @@
  * Turns the site into an installable app.
  *
  * Registers the service worker that keeps the app usable offline and drives the
- * "Install app" button. Browsers that can install a web app (Chrome, Edge and
+ * "Install app" button on the install page. Browsers that can install a web app (Chrome, Edge and
  * Samsung Internet on Android, Windows, Linux and macOS) fire
  * `beforeinstallprompt`; Safari on iOS, iPadOS and macOS installs from its own
  * menu instead, which is what the written instructions in the panel cover.
  */
 const installPanel = document.querySelector("#install-panel");
+const installedPanel = document.querySelector("#installed-panel");
 const installButton = document.querySelector("#install-app");
 const installStatus = document.querySelector("#install-status");
 
@@ -31,6 +32,7 @@ function hideInstallUi() {
   deferredPrompt = null;
   if (installButton) installButton.hidden = true;
   if (installPanel) installPanel.hidden = true;
+  if (installedPanel) installedPanel.hidden = false;
 }
 
 if (isInstalled()) {

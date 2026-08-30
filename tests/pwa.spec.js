@@ -172,7 +172,7 @@ test("keeps using the live alert feeds instead of cached alerts", async ({
 test("offers an install button when the browser can install the app", async ({
   page,
 }, testInfo) => {
-  await page.goto("/");
+  await page.goto("/install.html");
 
   const installButton = page.getByRole("button", { name: "Install app" });
   await expect(installButton).toBeHidden();
@@ -207,7 +207,7 @@ test("offers an install button when the browser can install the app", async ({
 });
 
 test("lists how to install on each platform", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/install.html");
 
   const platforms = page.locator("#install-panel .platforms li");
   await expect(platforms).toContainText([
@@ -227,8 +227,26 @@ test("hides the install help once the app runs from the home screen", async ({
       configurable: true,
     });
   });
-  await page.goto("/");
+  await page.goto("/install.html");
 
   await expect(page.locator("#install-panel")).toBeHidden();
-  await expect(page.getByRole("heading", { name: "5-Mins" })).toBeVisible();
+  await expect(page.locator("#installed-panel")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "5-Mins", exact: true }),
+  ).toBeVisible();
+});
+
+test("keeps the install help off the home page and one nav click away", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  await expect(page.locator("#install-panel")).toHaveCount(0);
+
+  await page.getByRole("link", { name: "Install", exact: true }).click();
+
+  await expect(page).toHaveURL(/install\.html$/);
+  await expect(
+    page.getByRole("heading", { name: "Install this app on your device" }),
+  ).toBeVisible();
 });
