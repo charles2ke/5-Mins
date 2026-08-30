@@ -22,6 +22,13 @@ active there, most severe first:
 
 ![A saved Miami location with one person to alert and three active alerts: an extreme hurricane warning, a severe earthquake and a moderate flood watch](docs/images/locations-and-alerts.png)
 
+The site follows your system's colour scheme, and the header toggle pins light
+or dark for good:
+
+| Light | Dark |
+| --- | --- |
+| ![5-Mins in light mode: a white page with dark text, the Dark mode toggle switched off](docs/images/theme-light.png) | ![5-Mins in dark mode: a deep navy page with light text, the Dark mode toggle switched on](docs/images/theme-dark.png) |
+
 ## Features
 
 - Add any number of locations: type a city name and pick it from the
