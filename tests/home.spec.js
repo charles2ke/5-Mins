@@ -307,7 +307,7 @@ test("carries the pinned theme over to the setup page", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("switch", { name: "Dark mode" }).click();
 
-  await page.getByRole("link", { name: "Setup" }).click();
+  await page.getByRole("link", { name: "Setup", exact: true }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await expect(page.getByRole("switch", { name: "Dark mode" })).toHaveAttribute(
     "aria-checked",

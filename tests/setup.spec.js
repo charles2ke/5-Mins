@@ -47,7 +47,8 @@ async function addLocation(
   } = {},
 ) {
   await page.getByLabel("Location name").fill(name);
-  await page.getByLabel("City").fill(city);
+  // "City" alone also matches the "City suggestions" listbox.
+  await page.getByLabel("City", { exact: true }).fill(city);
   await page.getByLabel("Country").fill(country);
   await page.getByLabel("Latitude").fill(lat);
   await page.getByLabel("Longitude").fill(lon);
@@ -210,6 +211,8 @@ test("suggests known cities and fills in their coordinates", async ({
   );
   await expect(page.getByLabel("Latitude")).toHaveValue("25.7743");
   await expect(page.getByLabel("Longitude")).toHaveValue("-80.1937");
+  await expect(page.getByLabel("City", { exact: true })).toHaveValue("Miami");
+  await expect(page.getByLabel("Country")).toHaveValue("United States");
   await expect(page.getByRole("option")).toHaveCount(0);
 
   await page.getByRole("button", { name: "Add location" }).click();
@@ -217,6 +220,9 @@ test("suggests known cities and fills in their coordinates", async ({
     page.getByRole("heading", { name: "Miami, Florida, United States" }),
   ).toBeVisible();
   await expect(page.getByText("25.7743, -80.1937")).toBeVisible();
+  await expect(page.locator("[data-location-place]")).toHaveText(
+    "Miami, United States",
+  );
 });
 
 test("picks a city suggestion with the keyboard", async ({ page }) => {
