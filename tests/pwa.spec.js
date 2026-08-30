@@ -197,6 +197,58 @@ test("offers an install button when the browser can install the app", async ({
   await expect(installButton).toBeHidden();
 });
 
+test("keeps the install button usable after the prompt is dismissed", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  const installButton = page.getByRole("button", { name: "Install app" });
+
+  await page.evaluate(() => {
+    const event = new Event("beforeinstallprompt");
+    window.__promptCalls = 0;
+    event.prompt = () => {
+      window.__promptCalls += 1;
+      // A real BeforeInstallPromptEvent rejects on a second prompt() call.
+      if (window.__promptCalls > 1) {
+        return Promise.reject(new Error("prompt() may only be called once"));
+      }
+      return Promise.resolve();
+    };
+    event.userChoice = Promise.resolve({ outcome: "dismissed" });
+    window.dispatchEvent(event);
+  });
+
+  await expect(installButton).toBeVisible();
+  await installButton.click();
+
+  await expect(page.locator("#install-status")).toContainText(
+    "Installation cancelled",
+  );
+  // The spent event must not be re-armed, otherwise a second click would
+  // report that the browser cannot install the app at all.
+  await expect(installButton).toBeHidden();
+
+  // A fresh event from the browser brings the button back.
+  await page.evaluate(() => {
+    const event = new Event("beforeinstallprompt");
+    event.prompt = () => {
+      window.__promptCalls += 1;
+      return Promise.resolve();
+    };
+    event.userChoice = Promise.resolve({ outcome: "accepted" });
+    window.dispatchEvent(event);
+  });
+
+  await expect(installButton).toBeVisible();
+  await installButton.click();
+
+  await expect(page.locator("#install-status")).toContainText(
+    "Installing 5-Mins",
+  );
+  expect(await page.evaluate(() => window.__promptCalls)).toBe(2);
+});
+
 test("lists how to install on each platform", async ({ page }) => {
   await page.goto("/");
 

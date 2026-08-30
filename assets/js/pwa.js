@@ -57,8 +57,13 @@ installButton?.addEventListener("click", async () => {
       installButton.hidden = true;
       setStatus("Installing 5-Mins. It will appear with your other apps.");
     } else {
-      deferredPrompt = prompt;
-      setStatus("Installation cancelled. You can install 5-Mins at any time.");
+      // A prompt event can only be used once, so drop it rather than re-arming
+      // the button with an event whose prompt() would throw. Browsers fire a
+      // fresh beforeinstallprompt on a later visit, which shows the button again.
+      installButton.hidden = true;
+      setStatus(
+        "Installation cancelled. You can install 5-Mins from your browser menu, or reload the page to try again.",
+      );
     }
   } catch {
     setStatus(
