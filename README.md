@@ -22,6 +22,13 @@ the last 7 days, most severe first:
 
 ![A saved Miami location with one person to alert and six alerts from the last 7 days: an extreme hurricane warning, a severe earthquake, a severe GDACS flood alert, a severe space weather alert, a moderate flood watch and a wildfire tracked by NASA EONET](docs/images/locations-and-alerts.png)
 
+The site follows your system's colour scheme, and the header toggle pins light
+or dark for good:
+
+| Light | Dark |
+| --- | --- |
+| ![5-Mins in light mode: a white page with dark text, the Dark mode toggle switched off](docs/images/theme-light.png) | ![5-Mins in dark mode: a deep navy page with light text, the Dark mode toggle switched on](docs/images/theme-dark.png) |
+
 ## Features
 
 - Add any number of locations: type a city name and pick it from the
@@ -35,6 +42,8 @@ the last 7 days, most severe first:
   the most severe first and colour coded by severity (Extreme, Severe, Moderate,
   Minor).
 - Refresh all alerts on demand.
+- Dark and light themes: the site follows the system colour scheme, and the
+  header toggle pins a theme that is remembered on the next visit.
 - Locations and people are stored in the browser's `localStorage`, so they
   survive reloads and never leave your device.
 
