@@ -370,7 +370,7 @@ function renderPeople(node, location, alerting) {
 }
 
 function addMetric(list, term, value) {
-  if (!value) return;
+  if (value === "") return;
   // Each metric is wrapped so its label and value stay together in the grid.
   const wrapper = document.createElement("div");
   const dt = document.createElement("dt");
