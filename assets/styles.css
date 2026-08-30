@@ -15,6 +15,8 @@
   --moderate-text: #ffffff;
   --minor: #0284c7;
   --border: #cbd5e1;
+  --hover: #e2e8f0;
+  --shadow: rgb(15 23 42 / 15%);
 }
 
 /* Dark palette, used when the system asks for it and light is not pinned. */
@@ -35,6 +37,8 @@
     --moderate-text: #1c1917;
     --minor: #0ea5e9;
     --border: #334155;
+    --hover: #1e293b;
+    --shadow: rgb(2 6 23 / 45%);
   }
 }
 
@@ -55,6 +59,8 @@
   --moderate-text: #1c1917;
   --minor: #0ea5e9;
   --border: #334155;
+  --hover: #1e293b;
+  --shadow: rgb(2 6 23 / 45%);
 }
 
 * {
@@ -265,7 +271,7 @@ button.link {
   background: var(--panel-alt);
   border: 1px solid var(--border);
   border-radius: 0.5rem;
-  box-shadow: 0 12px 24px rgb(2 6 23 / 45%);
+  box-shadow: 0 12px 24px var(--shadow);
 }
 
 .suggestion {
@@ -283,7 +289,7 @@ button.link {
 
 .suggestion:hover,
 .suggestion.is-active {
-  background: var(--panel);
+  background: var(--hover);
 }
 
 .suggestion.is-active {
