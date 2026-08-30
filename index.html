@@ -6,20 +6,46 @@
     <title>5-Mins &mdash; disaster alerts before it is too late</title>
     <meta
       name="description"
-      content="Add locations and the people who should be warned, and see every disaster or catastrophe alert currently active for those locations."
+      content="Add locations and the people who should be warned, and see every disaster or catastrophe alert reported for those locations over the last 7 days."
     />
     <link rel="stylesheet" href="assets/styles.css" />
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>&#9888;</text></svg>"
     />
+    <script>
+      // Pin the saved theme before the first paint so the page never flashes
+      // the wrong colours. Keep the key in sync with assets/js/theme.js.
+      try {
+        var savedTheme = localStorage.getItem("5-mins.theme.v1");
+        if (savedTheme === "light" || savedTheme === "dark") {
+          document.documentElement.dataset.theme = savedTheme;
+        }
+      } catch (error) {
+        // Storage unavailable: follow the system colour scheme instead.
+      }
+    </script>
   </head>
   <body>
     <header class="site-header">
-      <h1>5-Mins</h1>
+      <div class="site-header-top">
+        <h1>5-Mins</h1>
+        <button
+          type="button"
+          id="theme-toggle"
+          class="theme-toggle"
+          role="switch"
+          aria-checked="false"
+        >
+          <span class="theme-toggle-track" aria-hidden="true"
+            ><span class="theme-toggle-thumb"></span
+          ></span>
+          Dark mode
+        </button>
+      </div>
       <p class="tagline">
         Add a location, add the people who must know, and see every disaster
-        alert currently active there.
+        alert reported there over the last 7 days.
       </p>
     </header>
 
@@ -97,15 +123,35 @@
 
       <section class="panel" aria-labelledby="sources-heading">
         <h2 id="sources-heading">Where the alerts come from</h2>
+        <p class="note">
+          Every source below is a free public feed that needs no account or API
+          key. Alerts cover the last 7 days for each location.
+        </p>
         <ul class="sources">
           <li>
-            <strong>US National Weather Service</strong> &mdash; active warnings
-            and watches (hurricane, tornado, flood, wildfire, winter storm,
-            tsunami and more) for locations in the United States.
+            <strong>US National Weather Service</strong> &mdash; warnings and
+            watches (hurricane, tornado, flood, wildfire, winter storm, tsunami
+            and more) for locations in the United States.
           </li>
           <li>
             <strong>USGS Earthquake Hazards Program</strong> &mdash; significant
             earthquakes near the location, worldwide.
+          </li>
+          <li>
+            <strong>GDACS global disaster alerts</strong> &mdash; the European
+            Commission and United Nations multi-hazard system: earthquakes,
+            tropical cyclones, floods, volcanoes, droughts and wildfires,
+            worldwide.
+          </li>
+          <li>
+            <strong>NASA EONET natural events</strong> &mdash; ongoing wildfires,
+            severe storms, volcanic activity, floods and other natural events,
+            worldwide.
+          </li>
+          <li>
+            <strong>NOAA Space Weather Prediction Center</strong> &mdash;
+            geomagnetic storms, solar radiation storms and radio blackouts that
+            affect the whole planet.
           </li>
         </ul>
         <p class="note">
@@ -167,7 +213,7 @@
           </div>
 
           <div class="alerts">
-            <h4>Active alerts</h4>
+            <h4 data-alert-heading>Alerts</h4>
             <p class="status" data-alert-status>Loading alerts&hellip;</p>
             <ul class="alert-list" data-alerts></ul>
           </div>
@@ -201,6 +247,7 @@
       </li>
     </template>
 
+    <script type="module" src="assets/js/theme.js"></script>
     <script type="module" src="assets/js/app.js"></script>
   </body>
 </html>

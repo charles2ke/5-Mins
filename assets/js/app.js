@@ -1,4 +1,4 @@
-import { fetchAlerts } from "./alerts.js";
+import { ALERT_WINDOW_DAYS, fetchAlerts } from "./alerts.js";
 import { createCityAutocomplete } from "./autocomplete.js";
 import {
   loadLocations,
@@ -150,11 +150,13 @@ function renderAlertStatus(node, location, { alerts, errors }) {
   const status = node.querySelector("[data-alert-status]");
   const messages = [];
   if (alerts.length === 0) {
-    messages.push("No active alerts for this location.");
+    messages.push(
+      `No alerts in the last ${ALERT_WINDOW_DAYS} days for this location.`,
+    );
   } else {
     const people = location.people.length;
     messages.push(
-      `${alerts.length} active alert${alerts.length === 1 ? "" : "s"} · ${people} ${people === 1 ? "person" : "people"} to notify.`,
+      `${alerts.length} alert${alerts.length === 1 ? "" : "s"} in the last ${ALERT_WINDOW_DAYS} days · ${people} ${people === 1 ? "person" : "people"} to notify.`,
     );
     if (people > 0) {
       messages.push(`${safeCount(location)} marked safe.`);
@@ -262,6 +264,10 @@ function renderLocation(location) {
   node.querySelector("[data-location-name]").textContent = location.name;
   node.querySelector("[data-location-coords]").textContent =
     `${location.lat.toFixed(4)}, ${location.lon.toFixed(4)}`;
+
+  node
+    .querySelector("[data-alert-heading]")
+    .textContent = `Alerts · last ${ALERT_WINDOW_DAYS} days`;
 
   node
     .querySelector("[data-remove-location]")
