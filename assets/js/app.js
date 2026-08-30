@@ -191,8 +191,11 @@ function syncSafetyCheckIns(location, { alerts, errors }) {
     }
   }
 
-  if (triggered || current.size !== known.size) {
-    location.alertIds = [...current];
+  const next = errors.length > 0 ? new Set([...known, ...current]) : current;
+  const sameAlerts =
+    next.size === known.size && [...next].every((id) => known.has(id));
+  if (triggered || !sameAlerts) {
+    location.alertIds = [...next];
     changed = true;
   }
 
