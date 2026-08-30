@@ -739,16 +739,16 @@ test("keeps safe check-ins when a source fails and later recovers", async ({
     route.fulfill({ status: 503, body: "unavailable" }),
   );
   await page.getByRole("button", { name: "Refresh alerts" }).click();
-  await expect(page.locator("[data-alert]")).toHaveCount(1);
+  await expect(page.locator("[data-alert]")).toHaveCount(4);
   await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(1);
 
   await page.unroute("https://api.weather.gov/**");
   await page.route("https://api.weather.gov/**", (route) =>
-    route.fulfill({ json: weatherAlerts }),
+    route.fulfill({ json: buildFeeds().weatherAlerts }),
   );
   await page.getByRole("button", { name: "Refresh alerts" }).click();
 
-  await expect(page.locator("[data-alert]")).toHaveCount(3);
+  await expect(page.locator("[data-alert]")).toHaveCount(6);
   await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(1);
   await expect(page.locator("[data-alert-status]")).toContainText("1 marked safe.");
 });
