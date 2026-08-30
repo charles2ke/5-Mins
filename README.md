@@ -19,6 +19,8 @@ available for those coordinates.
 - See every active alert for a location, sorted with the most severe first and
   colour coded by severity (Extreme, Severe, Moderate, Minor).
 - Refresh all alerts on demand.
+- Dark and light themes: the site follows the system colour scheme, and the
+  header toggle pins a theme that is remembered on the next visit.
 - Locations and people are stored in the browser's `localStorage`, so they
   survive reloads and never leave your device.
 

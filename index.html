@@ -13,10 +13,36 @@
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>&#9888;</text></svg>"
     />
+    <script>
+      // Pin the saved theme before the first paint so the page never flashes
+      // the wrong colours. Keep the key in sync with assets/js/theme.js.
+      try {
+        var savedTheme = localStorage.getItem("5-mins.theme.v1");
+        if (savedTheme === "light" || savedTheme === "dark") {
+          document.documentElement.dataset.theme = savedTheme;
+        }
+      } catch (error) {
+        // Storage unavailable: follow the system colour scheme instead.
+      }
+    </script>
   </head>
   <body>
     <header class="site-header">
-      <h1>5-Mins</h1>
+      <div class="site-header-top">
+        <h1>5-Mins</h1>
+        <button
+          type="button"
+          id="theme-toggle"
+          class="theme-toggle"
+          role="switch"
+          aria-checked="false"
+        >
+          <span class="theme-toggle-track" aria-hidden="true"
+            ><span class="theme-toggle-thumb"></span
+          ></span>
+          Dark mode
+        </button>
+      </div>
       <p class="tagline">
         Add a location, add the people who must know, and see every disaster
         alert currently active there.
@@ -178,6 +204,7 @@
       </li>
     </template>
 
+    <script type="module" src="assets/js/theme.js"></script>
     <script type="module" src="assets/js/app.js"></script>
   </body>
 </html>
