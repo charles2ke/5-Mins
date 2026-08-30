@@ -2,17 +2,27 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
     <title>5-Mins &mdash; disaster alerts before it is too late</title>
     <meta
       name="description"
       content="Add locations and the people who should be warned, and see every disaster or catastrophe alert currently active for those locations."
     />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0f172a" />
     <link rel="stylesheet" href="assets/styles.css" />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>&#9888;</text></svg>"
-    />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
+    <link rel="icon" href="assets/icons/icon-192.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+    <meta name="application-name" content="5-Mins" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="5-Mins" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   </head>
   <body>
     <header class="site-header">
@@ -117,6 +127,40 @@
           over the worldwide GeoNames city database.
         </p>
       </section>
+
+      <section class="panel" id="install-panel" aria-labelledby="install-heading">
+        <div class="panel-header">
+          <h2 id="install-heading">Install this app on your device</h2>
+          <button type="button" id="install-app" class="primary" hidden>
+            Install app
+          </button>
+        </div>
+        <p id="install-status" class="note" role="status">
+          5-Mins works in any modern browser and can be installed as an app on
+          Android, iPhone, iPad, Windows, macOS and Linux. Once installed it
+          opens in its own window and still starts when you are offline.
+        </p>
+        <ul class="platforms">
+          <li>
+            <strong>Android</strong> &mdash; in Chrome, Edge or Samsung
+            Internet, use <em>Install app</em> above or the browser menu &rarr;
+            <em>Add to Home screen</em>.
+          </li>
+          <li>
+            <strong>iPhone and iPad (iOS, iPadOS)</strong> &mdash; in Safari,
+            tap <em>Share</em> &rarr; <em>Add to Home Screen</em>.
+          </li>
+          <li>
+            <strong>Windows and Linux</strong> &mdash; in Chrome or Edge, use
+            <em>Install app</em> above or the install icon in the address bar.
+          </li>
+          <li>
+            <strong>macOS</strong> &mdash; in Safari, choose <em>File</em>
+            &rarr; <em>Add to Dock</em>; in Chrome or Edge, use
+            <em>Install app</em> above.
+          </li>
+        </ul>
+      </section>
     </main>
 
     <footer class="site-footer">
@@ -196,5 +240,6 @@
     </template>
 
     <script type="module" src="assets/js/app.js"></script>
+    <script type="module" src="assets/js/pwa.js"></script>
   </body>
 </html>

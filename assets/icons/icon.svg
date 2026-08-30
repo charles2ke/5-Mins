@@ -1,0 +1,27 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 512 512"
+  width="512"
+  height="512"
+  role="img"
+  aria-label="5-Mins"
+>
+  <title>5-Mins</title>
+  <!-- Full-bleed background so the icon also works as a maskable and Apple touch icon. -->
+  <rect width="512" height="512" fill="#0f172a" />
+  <!-- Warning triangle, kept inside the maskable safe zone (centre circle, 80% of the width). -->
+  <path
+    d="M256 120 L410 385 L102 385 Z"
+    fill="#38bdf8"
+    stroke="#38bdf8"
+    stroke-width="30"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M256 212 v78"
+    stroke="#0f172a"
+    stroke-width="34"
+    stroke-linecap="round"
+  />
+  <circle cx="256" cy="342" r="19" fill="#0f172a" />
+</svg>

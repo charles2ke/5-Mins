@@ -24,6 +24,9 @@ active there, most severe first:
 
 ## Features
 
+- Runs on **Android, iPhone, iPad, Windows, macOS and Linux** — it is an
+  installable Progressive Web App as well as a website, so it opens in its own
+  window and still starts when the device is offline.
 - Add any number of locations: type a city name and pick it from the
   autocomplete, use the browser's "Use my location" button, or enter
   coordinates by hand.
@@ -36,6 +39,25 @@ active there, most severe first:
 - Refresh all alerts on demand.
 - Locations and people are stored in the browser's `localStorage`, so they
   survive reloads and never leave your device.
+
+## Install it on your device
+
+5-Mins is a Progressive Web App, so the same site can be installed as an app on
+every major platform. Open https://charles2ke.github.io/5-Mins/ and then:
+
+| Platform | How to install |
+| --- | --- |
+| Android | Chrome, Edge or Samsung Internet: tap **Install app** in the "Install this app on your device" panel, or the browser menu → **Add to Home screen**. |
+| iOS and iPadOS | Safari: tap **Share** → **Add to Home Screen**. |
+| Windows | Chrome or Edge: click **Install app**, or the install icon at the right of the address bar. |
+| Linux | Chrome, Chromium or Edge: click **Install app**, or the install icon in the address bar. |
+| macOS | Safari 17 or later: **File → Add to Dock**. Chrome or Edge: click **Install app**. |
+
+The installed app runs full screen with its own icon, keeps working while
+offline (the last version of the app is cached on the device) and stores
+locations and people on that device only. Alerts themselves are always fetched
+live, so a stale warning is never shown. Browsers that cannot install web apps
+still open 5-Mins as an ordinary website.
 
 ## Alert sources
 
@@ -65,6 +87,10 @@ repository root with any static server:
 npm start          # python3 -m http.server 4173
 # then open http://127.0.0.1:4173
 ```
+
+The service worker (`sw.js`) and the web app manifest
+(`manifest.webmanifest`) live in the repository root, so serving that directory
+is enough to install the app locally too.
 
 ## Tests
 
