@@ -12,7 +12,8 @@ function isFiniteNumber(value) {
 }
 
 /**
- * Validates and normalises a location. Throws when the input is unusable.
+ * Validates and normalises a location. City and country are optional and are
+ * what the home page filters use. Throws when the input is unusable.
  */
 export function normaliseLocation(input) {
   const name = String(input.name ?? "").trim();

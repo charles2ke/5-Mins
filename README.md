@@ -2,23 +2,38 @@
 
 Provide users an alert before a catastrophe or disaster.
 
-5-Mins is a small static website where you add the **locations** you care about
-and the **people** who must be warned about each of them. For every location the
-site pulls in all the disaster and catastrophe alerts that are currently
-available for those coordinates.
+5-Mins is a small static website with two pages:
+
+- **Home** — a world map of every disaster or catastrophe alert currently
+  active for the locations you watch, with filters by country and city.
+- **Setup** — where you add the **locations** you care about and the **people**
+  who must be warned about each of them.
 
 **Live site:** https://charles2ke.github.io/5-Mins/ (published automatically from
 `main`).
 
 ## Features
 
+### Home page
+
+- World map with one marker per location, coloured by the most severe alert
+  currently active there and sized by how many alerts there are.
+- Filter the map and the list by **country** or by **city**. The city filter
+  only offers cities from the selected country, and both filters are kept in the
+  URL (`?country=japan&city=tokyo`) so a filtered view can be shared.
+- Click (or focus and press <kbd>Enter</kbd> on) a marker to highlight that
+  location in the list below the map.
+- Every alert for every location, sorted with the most severe first and colour
+  coded by severity (Extreme, Severe, Moderate, Minor).
+- Refresh all alerts on demand.
+
+### Setup page
+
 - Add any number of locations by name and coordinates, or use the browser's
-  "Use my location" button.
+  "Use my location" button. City and country are optional and power the home
+  page filters.
 - Add and remove the people who should be alerted for each location, with an
   email address or phone number for each.
-- See every active alert for a location, sorted with the most severe first and
-  colour coded by severity (Extreme, Severe, Moderate, Minor).
-- Refresh all alerts on demand.
 - Locations and people are stored in the browser's `localStorage`, so they
   survive reloads and never leave your device.
 
@@ -31,6 +46,12 @@ available for those coordinates.
 
 Both feeds are public and need no API key. If one feed is unavailable, the
 alerts from the other are still shown along with an explanation.
+
+The world map outlines come from the
+[Natural Earth](https://www.naturalearthdata.com/) 1:110m land vectors, which
+are in the public domain. They are embedded as a simplified SVG path in
+`assets/js/world-land.js`, so the map needs no map tiles, no API key and no
+network access.
 
 ## Running locally
 

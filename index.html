@@ -59,7 +59,6 @@
             id="world-map"
             viewBox="0 0 1000 500"
             preserveAspectRatio="xMidYMid meet"
-            role="img"
             aria-labelledby="map-heading"
             aria-describedby="map-summary"
           >
@@ -68,7 +67,7 @@
             <path class="map-land" id="map-land" d="" />
             <g class="map-markers" id="map-markers"></g>
           </svg>
-          <figcaption id="map-summary" class="status">
+          <figcaption id="map-summary" class="status" aria-live="polite">
             Loading alerts&hellip;
           </figcaption>
         </figure>
