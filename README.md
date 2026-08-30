@@ -25,7 +25,7 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
 - Filter the map and the list by **country**, **city** or **severity**. The city
   filter only offers cities from the selected country, the severity filter takes
   **as many severities as you like** at once, and every filter is kept in the URL
-  (`?country=japan&city=tokyo&severity=extreme,severe`) so a filtered view can be
+  (`?country=japan&city=tokyo&severity=extreme%2Csevere`) so a filtered view can be
   shared.
 - Every location card **folds away** with a click on its header; the alert count
   and the worst severity stay visible while it is folded.
@@ -93,7 +93,7 @@ locations without one drop off the map.*
 ![Home page filtered to Extreme and Moderate alerts, showing both severities in the lists](docs/images/home-filtered-by-severities.png)
 
 *Home — several severities can be selected together; the choice is kept in the
-URL as `?severity=extreme,moderate`.*
+URL as `?severity=extreme%2Cmoderate`.*
 
 ![Home page with the Miami location card folded, showing only its heading, alert count and severity badge](docs/images/home-folded-location.png)
 
