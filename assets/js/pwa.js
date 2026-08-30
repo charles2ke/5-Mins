@@ -65,7 +65,7 @@ installButton?.addEventListener("click", async () => {
       "This browser could not install 5-Mins. Use its menu to add the app to your home screen or dock.",
     );
   } finally {
-    installButton.disabled = false;
+    if (!installButton.hidden) installButton.disabled = false;
   }
 });
 

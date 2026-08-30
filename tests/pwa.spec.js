@@ -116,8 +116,12 @@ test("registers a service worker and still opens when offline", async ({
   await page.reload();
 
   await expect(page.getByRole("heading", { name: "5-Mins" })).toBeVisible();
-  await expect(page.getByText("No locations yet.")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Add location" })).toBeVisible();
+  await expect(
+    page.getByText("No locations yet. Add them on the setup page to see them on the map."),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Setup", exact: true }),
+  ).toBeVisible();
 
   await testInfo.attach("offline-app-shell", {
     body: await page.screenshot({ fullPage: true }),
@@ -151,11 +155,13 @@ test("keeps using the live alert feeds instead of cached alerts", async ({
     }),
   );
 
+  await page.goto("/setup.html");
   await page.getByLabel("Location name").fill("Miami");
   await page.getByLabel("Latitude").fill("25.7617");
   await page.getByLabel("Longitude").fill("-80.1918");
   await page.getByRole("button", { name: "Add location" }).click();
 
+  await page.goto("/");
   await expect(page.locator("[data-alert]")).toHaveCount(1);
   await expect(page.locator("[data-alert]")).toContainText("Tsunami Warning");
 });

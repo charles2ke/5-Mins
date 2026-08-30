@@ -21,10 +21,13 @@ function normaliseTimestamp(value) {
 }
 
 /**
- * Validates and normalises a location. Throws when the input is unusable.
+ * Validates and normalises a location. City and country are optional and are
+ * what the home page filters use. Throws when the input is unusable.
  */
 export function normaliseLocation(input) {
   const name = String(input.name ?? "").trim();
+  const city = String(input.city ?? "").trim().replace(/\s+/g, " ");
+  const country = String(input.country ?? "").trim().replace(/\s+/g, " ");
   const lat = Number(input.lat);
   const lon = Number(input.lon);
 
@@ -41,6 +44,8 @@ export function normaliseLocation(input) {
   return {
     id: input.id || createId(),
     name,
+    city,
+    country,
     lat,
     lon,
     people: Array.isArray(input.people)

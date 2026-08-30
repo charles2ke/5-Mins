@@ -25,13 +25,13 @@ function toCity(result, index) {
   if (!Number.isFinite(lat) || lat < -90 || lat > 90) return null;
   if (!Number.isFinite(lon) || lon < -180 || lon > 180) return null;
 
-  const region = [text(result?.admin1), text(result?.country)]
-    .filter(Boolean)
-    .join(", ");
+  const country = text(result?.country);
+  const region = [text(result?.admin1), country].filter(Boolean).join(", ");
 
   return {
     id: text(result?.id) || `city-${index}`,
     name,
+    country,
     region,
     label: region ? `${name}, ${region}` : name,
     lat,

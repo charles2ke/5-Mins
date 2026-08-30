@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>5-Mins &mdash; setup: locations and people</title>
+    <meta
+      name="description"
+      content="Add the locations you care about and the people who should be warned about a disaster or catastrophe there."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f1f5f9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
+    <link rel="stylesheet" href="assets/styles.css" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
+    <link rel="icon" href="assets/icons/icon-192.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+    <meta name="application-name" content="5-Mins" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="5-Mins" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <script>
+      // Pin the saved theme before the first paint so the page never flashes
+      // the wrong colours. Keep the key in sync with assets/js/theme.js.
+      try {
+        var savedTheme = localStorage.getItem("5-mins.theme.v1");
+        if (savedTheme === "light" || savedTheme === "dark") {
+          document.documentElement.dataset.theme = savedTheme;
+        }
+      } catch (error) {
+        // Storage unavailable: follow the system colour scheme instead.
+      }
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="brand">
+        <h1>5-Mins</h1>
+        <p class="tagline">
+          Set up the locations you care about and the people who must know when
+          a disaster is heading their way.
+        </p>
+      </div>
+      <div class="header-actions">
+        <nav class="site-nav" aria-label="Main">
+          <a href="./">Home</a>
+          <a href="setup.html" class="current" aria-current="page">Setup</a>
+        </nav>
+        <button
+          type="button"
+          id="theme-toggle"
+          class="theme-toggle"
+          role="switch"
+          aria-checked="false"
+        >
+          <span class="theme-toggle-track" aria-hidden="true"
+            ><span class="theme-toggle-thumb"></span
+          ></span>
+          Dark mode
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel" aria-labelledby="add-location-heading">
+        <h2 id="add-location-heading">Add a location</h2>
+        <form id="location-form" class="form-grid" novalidate>
+          <div class="field combobox">
+            <label for="location-name">Location name</label>
+            <input
+              id="location-name"
+              name="name"
+              type="text"
+              placeholder="Start typing a city, e.g. Miami"
+              autocomplete="off"
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded="false"
+              aria-controls="city-suggestions"
+              required
+            />
+            <ul
+              id="city-suggestions"
+              class="suggestions"
+              role="listbox"
+              aria-label="City suggestions"
+              hidden
+            ></ul>
+            <p id="city-status" class="hint" role="status" hidden></p>
+          </div>
+          <div class="field">
+            <label for="location-city">City</label>
+            <input
+              id="location-city"
+              name="city"
+              type="text"
+              placeholder="Miami"
+            />
+          </div>
+          <div class="field">
+            <label for="location-country">Country</label>
+            <input
+              id="location-country"
+              name="country"
+              type="text"
+              placeholder="United States"
+            />
+          </div>
+          <div class="field">
+            <label for="location-lat">Latitude</label>
+            <input
+              id="location-lat"
+              name="lat"
+              type="number"
+              step="any"
+              min="-90"
+              max="90"
+              placeholder="25.7617"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="location-lon">Longitude</label>
+            <input
+              id="location-lon"
+              name="lon"
+              type="number"
+              step="any"
+              min="-180"
+              max="180"
+              placeholder="-80.1918"
+              required
+            />
+          </div>
+          <div class="actions">
+            <button type="submit" class="primary">Add location</button>
+            <button type="button" id="use-my-location">Use my location</button>
+          </div>
+        </form>
+        <p id="location-form-error" class="error" role="alert" hidden></p>
+        <p class="note">
+          City and country are optional, but they are what the home page filters
+          use.
+        </p>
+      </section>
+
+      <section class="panel" aria-labelledby="locations-heading">
+        <div class="panel-header">
+          <h2 id="locations-heading">Locations &amp; people</h2>
+          <a class="button-link" href="./">See the alert map</a>
+        </div>
+        <p id="empty-state" class="empty">
+          No locations yet. Add one above to start watching for alerts.
+        </p>
+        <ul id="locations" class="locations"></ul>
+      </section>
+
+      <section class="panel" aria-labelledby="sources-heading">
+        <h2 id="sources-heading">Where the alerts come from</h2>
+        <p class="note">
+          Every source below is a free public feed that needs no account or API
+          key. Alerts cover the last 7 days for each location.
+        </p>
+        <ul class="sources">
+          <li>
+            <strong>US National Weather Service</strong> &mdash; warnings and
+            watches (hurricane, tornado, flood, wildfire, winter storm, tsunami
+            and more) for locations in the United States.
+          </li>
+          <li>
+            <strong>USGS Earthquake Hazards Program</strong> &mdash; significant
+            earthquakes near the location, worldwide.
+          </li>
+          <li>
+            <strong>GDACS global disaster alerts</strong> &mdash; the European
+            Commission and United Nations multi-hazard system: earthquakes,
+            tropical cyclones, floods, volcanoes, droughts and wildfires,
+            worldwide.
+          </li>
+          <li>
+            <strong>NASA EONET natural events</strong> &mdash; ongoing wildfires,
+            severe storms, volcanic activity, floods and other natural events,
+            worldwide.
+          </li>
+          <li>
+            <strong>NOAA Space Weather Prediction Center</strong> &mdash;
+            geomagnetic storms, solar radiation storms and radio blackouts that
+            affect the whole planet.
+          </li>
+        </ul>
+        <p class="note">
+          Locations and people are stored only in this browser. Nothing is sent
+          to a server.
+        </p>
+        <p class="note">
+          City suggestions come from the Open-Meteo geocoding API, a free search
+          over the worldwide GeoNames city database.
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        5-Mins is an informational tool. Always follow instructions from
+        your local emergency services.
+      </p>
+    </footer>
+
+    <template id="location-template">
+      <li class="location" data-location>
+        <div class="location-header">
+          <div>
+            <h3 data-location-name></h3>
+            <p class="place" data-location-place></p>
+            <p class="coords" data-location-coords></p>
+          </div>
+          <button type="button" class="danger" data-remove-location>
+            Remove location
+          </button>
+        </div>
+
+        <div class="people">
+          <h4>People to alert</h4>
+          <ul class="people-list" data-people></ul>
+          <p class="empty" data-people-empty>
+            Nobody will be alerted for this location yet.
+          </p>
+          <form class="person-form" data-person-form novalidate>
+            <input
+              type="text"
+              name="name"
+              placeholder="Name"
+              aria-label="Person name"
+              required
+            />
+            <input
+              type="text"
+              name="contact"
+              placeholder="Email or phone"
+              aria-label="Email or phone"
+              required
+            />
+            <button type="submit">Add person</button>
+          </form>
+          <p class="error" data-person-error role="alert" hidden></p>
+        </div>
+      </li>
+    </template>
+
+    <template id="person-template">
+      <li class="person" data-person>
+        <span data-person-name></span>
+        <span class="contact" data-person-contact></span>
+        <button type="button" class="link" data-remove-person>Remove</button>
+      </li>
+    </template>
+
+    <script type="module" src="assets/js/theme.js"></script>
+    <script type="module" src="assets/js/setup.js"></script>
+    <script type="module" src="assets/js/pwa.js"></script>
+  </body>
+</html>

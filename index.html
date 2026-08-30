@@ -6,10 +6,10 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>5-Mins &mdash; disaster alerts before it is too late</title>
+    <title>5-Mins &mdash; world map of recent disaster alerts</title>
     <meta
       name="description"
-      content="Add locations and the people who should be warned, and see every disaster or catastrophe alert reported for those locations over the last 7 days."
+      content="A world map of every disaster or catastrophe alert reported for the locations you watch over the last 7 days, with country and city filters."
     />
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#f1f5f9" media="(prefers-color-scheme: light)" />
@@ -39,8 +39,18 @@
   </head>
   <body>
     <header class="site-header">
-      <div class="site-header-top">
+      <div class="brand">
         <h1>5-Mins</h1>
+        <p class="tagline">
+          Every disaster alert from the last 7 days across the places you
+          watch, on one world map.
+        </p>
+      </div>
+      <div class="header-actions">
+        <nav class="site-nav" aria-label="Main">
+          <a href="./" class="current" aria-current="page">Home</a>
+          <a href="setup.html">Setup</a>
+        </nav>
         <button
           type="button"
           id="theme-toggle"
@@ -54,80 +64,69 @@
           Dark mode
         </button>
       </div>
-      <p class="tagline">
-        Add a location, add the people who must know, and see every disaster
-        alert reported there over the last 7 days.
-      </p>
     </header>
 
     <main>
-      <section class="panel" aria-labelledby="add-location-heading">
-        <h2 id="add-location-heading">Add a location</h2>
-        <form id="location-form" class="form-grid" novalidate>
-          <div class="field combobox">
-            <label for="location-name">Location name</label>
-            <input
-              id="location-name"
-              name="name"
-              type="text"
-              placeholder="Start typing a city, e.g. Miami"
-              autocomplete="off"
-              role="combobox"
-              aria-autocomplete="list"
-              aria-expanded="false"
-              aria-controls="city-suggestions"
-              required
-            />
-            <ul
-              id="city-suggestions"
-              class="suggestions"
-              role="listbox"
-              aria-label="City suggestions"
-              hidden
-            ></ul>
-            <p id="city-status" class="hint" role="status" hidden></p>
-          </div>
-          <div class="field">
-            <label for="location-lat">Latitude</label>
-            <input
-              id="location-lat"
-              name="lat"
-              type="number"
-              step="any"
-              min="-90"
-              max="90"
-              placeholder="25.7617"
-              required
-            />
-          </div>
-          <div class="field">
-            <label for="location-lon">Longitude</label>
-            <input
-              id="location-lon"
-              name="lon"
-              type="number"
-              step="any"
-              min="-180"
-              max="180"
-              placeholder="-80.1918"
-              required
-            />
-          </div>
-          <div class="actions">
-            <button type="submit" class="primary">Add location</button>
-            <button type="button" id="use-my-location">Use my location</button>
-          </div>
-        </form>
-        <p id="location-form-error" class="error" role="alert" hidden></p>
-      </section>
-
-      <section class="panel" aria-labelledby="locations-heading">
+      <section class="panel" aria-labelledby="map-heading">
         <div class="panel-header">
-          <h2 id="locations-heading">Locations &amp; alerts</h2>
+          <h2 id="map-heading">World map of recent alerts</h2>
           <button type="button" id="refresh-alerts">Refresh alerts</button>
         </div>
+
+        <div class="filters">
+          <div class="field">
+            <label for="filter-country">Filter by country</label>
+            <select id="filter-country">
+              <option value="">All countries</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="filter-city">Filter by city</label>
+            <select id="filter-city">
+              <option value="">All cities</option>
+            </select>
+          </div>
+          <div class="actions">
+            <button type="button" id="clear-filters">Clear filters</button>
+          </div>
+        </div>
+
+        <figure class="map">
+          <svg
+            id="world-map"
+            viewBox="0 0 1000 500"
+            preserveAspectRatio="xMidYMid meet"
+            aria-labelledby="map-heading"
+            aria-describedby="map-summary"
+          >
+            <rect class="map-ocean" x="0" y="0" width="1000" height="500" />
+            <g class="map-graticule" id="map-graticule"></g>
+            <path class="map-land" id="map-land" d="" />
+            <g class="map-markers" id="map-markers"></g>
+          </svg>
+          <figcaption id="map-summary" class="status" aria-live="polite">
+            Loading alerts&hellip;
+          </figcaption>
+        </figure>
+
+        <ul class="legend">
+          <li data-severity="Extreme">Extreme</li>
+          <li data-severity="Severe">Severe</li>
+          <li data-severity="Moderate">Moderate</li>
+          <li data-severity="Minor">Minor</li>
+          <li data-severity="None">No alerts</li>
+        </ul>
+      </section>
+
+      <section class="panel" aria-labelledby="alerts-heading">
+        <h2 id="alerts-heading">Alerts by location</h2>
         <p id="empty-state" class="empty">
-          No locations yet. Add one above to start watching for alerts.
+          No locations yet.
+          <a href="setup.html">Add locations and people on the setup page</a>
+          to start watching for alerts.
+        </p>
+        <p id="no-matches" class="empty" hidden>
+          No location matches the selected filters.
         </p>
         <ul id="locations" class="locations"></ul>
       </section>
@@ -167,11 +166,9 @@
         </ul>
         <p class="note">
           Locations and people are stored only in this browser. Nothing is sent
-          to a server.
-        </p>
-        <p class="note">
-          City suggestions come from the Open-Meteo geocoding API, a free search
-          over the worldwide GeoNames city database.
+          to a server. Map outlines come from
+          <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener noreferrer">Natural Earth</a>
+          (public domain).
         </p>
       </section>
 
@@ -188,24 +185,10 @@
           opens in its own window and still starts when you are offline.
         </p>
         <ul class="platforms">
-          <li>
-            <strong>Android</strong> &mdash; in Chrome, Edge or Samsung
-            Internet, use <em>Install app</em> above or the browser menu &rarr;
-            <em>Add to Home screen</em>.
-          </li>
-          <li>
-            <strong>iPhone and iPad (iOS, iPadOS)</strong> &mdash; in Safari,
-            tap <em>Share</em> &rarr; <em>Add to Home Screen</em>.
-          </li>
-          <li>
-            <strong>Windows and Linux</strong> &mdash; in Chrome or Edge, use
-            <em>Install app</em> above or the install icon in the address bar.
-          </li>
-          <li>
-            <strong>macOS</strong> &mdash; in Safari, choose <em>File</em>
-            &rarr; <em>Add to Dock</em>; in Chrome or Edge, use
-            <em>Install app</em> above.
-          </li>
+          <li><strong>Android</strong> &mdash; use <em>Install app</em> above or the browser menu &rarr; <em>Add to Home screen</em>.</li>
+          <li><strong>iPhone and iPad</strong> &mdash; in Safari, tap <em>Share</em> &rarr; <em>Add to Home Screen</em>.</li>
+          <li><strong>Windows and Linux</strong> &mdash; in Chrome or Edge, use <em>Install app</em> above or the install icon in the address bar.</li>
+          <li><strong>macOS</strong> &mdash; in Safari, choose <em>File</em> &rarr; <em>Add to Dock</em>; in Chrome or Edge, use <em>Install app</em> above.</li>
         </ul>
       </section>
     </main>
@@ -222,47 +205,17 @@
         <div class="location-header">
           <div>
             <h3 data-location-name></h3>
+            <p class="place" data-location-place></p>
             <p class="coords" data-location-coords></p>
           </div>
-          <button type="button" class="danger" data-remove-location>
-            Remove location
-          </button>
+          <span class="severity" data-location-severity></span>
         </div>
 
-        <div class="location-body">
-          <div class="people">
-            <h4>People to alert</h4>
-            <ul class="people-list" data-people></ul>
-            <p class="empty" data-people-empty>
-              Nobody will be alerted for this location yet.
-            </p>
-            <p class="safety-summary" data-safety-summary hidden></p>
-            <form class="person-form" data-person-form novalidate>
-              <input
-                type="text"
-                name="name"
-                placeholder="Name"
-                aria-label="Person name"
-                required
-              />
-              <input
-                type="text"
-                name="contact"
-                placeholder="Email or phone"
-                aria-label="Email or phone"
-                required
-              />
-              <button type="submit">Add person</button>
-            </form>
-            <p class="error" data-person-error role="alert" hidden></p>
-          </div>
-
-          <div class="alerts">
-            <h4 data-alert-heading>Alerts</h4>
-            <p class="status" data-alert-status>Loading alerts&hellip;</p>
-            <ul class="alert-list" data-alerts></ul>
-          </div>
-        </div>
+        <p class="status" data-alert-status>Loading alerts&hellip;</p>
+        <p class="people-summary" data-people-summary></p>
+        <ul class="people-list" data-people></ul>
+        <p class="safety-summary" data-safety-summary hidden></p>
+        <ul class="alert-list" data-alerts></ul>
       </li>
     </template>
 
@@ -275,7 +228,6 @@
         <button type="button" class="link" data-undo-safe hidden>
           Undo safe
         </button>
-        <button type="button" class="link" data-remove-person>Remove</button>
       </li>
     </template>
 
@@ -293,7 +245,7 @@
     </template>
 
     <script type="module" src="assets/js/theme.js"></script>
-    <script type="module" src="assets/js/app.js"></script>
+    <script type="module" src="assets/js/home.js"></script>
     <script type="module" src="assets/js/pwa.js"></script>
   </body>
 </html>

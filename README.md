@@ -2,88 +2,91 @@
 
 Provide users an alert before a catastrophe or disaster. The crucial minutes to save lives. 
 
-5-Mins is a small site where you add the **locations** you care about
-and the **people** who must be warned about each of them. For every location the
-site pulls in all the disaster and catastrophe alerts reported for those
-coordinates over the last 7 days. It runs in the browser and installs as an app
-on Android, iOS, iPadOS, Windows, macOS and Linux.
+5-Mins is a small static website with two pages:
+
+- **Home** — a world map of every disaster or catastrophe alert reported for
+  the locations you watch over the last 7 days, with filters by country and
+  city.
+- **Setup** — where you add the **locations** you care about and the **people**
+  who must be warned about each of them.
 
 **Live site:** https://charles2ke.github.io/5-Mins/ (published automatically from
 `main`).
 
+## Features
+
+### Home page
+
+- World map with one marker per location, coloured by the most severe alert
+  reported there in the last 7 days and sized by how many alerts there are.
+- Filter the map and the list by **country** or by **city**. The city filter
+  only offers cities from the selected country, and both filters are kept in the
+  URL (`?country=japan&city=tokyo`) so a filtered view can be shared.
+- Click (or focus and press <kbd>Enter</kbd> on) a marker to highlight that
+  location in the list below the map.
+- Every alert reported for every location over the last **7 days**, sorted with
+  the most severe first and colour coded by severity (Extreme, Severe, Moderate,
+  Minor).
+- Refresh all alerts on demand.
+- While an alert is active, each person can mark themselves safe. A new alert
+  clears those check-ins so everyone confirms again.
+
+### Setup page
+
+- Add any number of locations: type a city name and pick it from the
+  autocomplete, use the browser's "Use my location" button, or enter
+  coordinates by hand.
+- City suggestions cover every known city worldwide and fill in the latitude,
+  longitude, city and country of the city you choose, so the home page filters
+  work straight away.
+- Add and remove the people who should be alerted for each location, with an
+  email address or phone number for each.
+
+### Everywhere
+
+- Dark and light themes: the site follows the system colour scheme, and the
+  header toggle pins a theme that is remembered on the next visit.
+- Locations and people are stored in the browser's `localStorage`, so they
+  survive reloads and never leave your device.
+- Runs as an installable Progressive Web App on Android, iOS, iPadOS, Windows,
+  macOS and Linux, and can reopen offline.
+
 ## Screenshots
 
-Start typing a city and pick it from the suggestions — every known city is
-searchable and the coordinates are filled in for you:
+These are captured by the Playwright suite, so they always match the current
+behaviour of the site.
 
-![The location name field showing city suggestions for "Miam", with Miami, Miami Beach, Miami Gardens and Miami Lakes listed below the input](docs/images/city-autocomplete.png)
+![Home page showing the world map with markers for Miami and Tokyo and every alert from the last 7 days listed below it](docs/images/home-world-map.png)
 
-Each location lists the people to warn next to every alert reported there in
-the last 7 days, most severe first:
+*Home — every alert from the last 7 days on the world map, with the alert list underneath.*
 
-![A saved Miami location with one person to alert and six alerts from the last 7 days: an extreme hurricane warning, a severe earthquake, a severe GDACS flood alert, a severe space weather alert, a moderate flood watch and a wildfire tracked by NASA EONET](docs/images/locations-and-alerts.png)
+![Home page filtered to Japan, showing a single marker and only the Tokyo location](docs/images/home-filtered-by-country.png)
+
+*Home — filtered to a single country; the city filter narrows to that country's
+cities and the filters are kept in the URL.*
+
+![Setup page showing a location with its city, country and coordinates](docs/images/setup-page.png)
+
+*Setup — add the locations you watch, with an optional city and country that
+power the home page filters.*
+
+![The location name field showing city suggestions for "Miam", with Miami, Miami Beach and Miami listed below the input](docs/images/city-autocomplete.png)
+
+*Setup — start typing a city and pick it from the suggestions; the coordinates,
+city and country are filled in for you.*
+
+![Setup page showing a person added to the people to alert list for a location](docs/images/people-to-alert.png)
+
+*Setup — add the people who must be warned about each location.*
 
 The site follows your system's colour scheme, and the header toggle pins light
 or dark for good:
 
 | Light | Dark |
 | --- | --- |
-| ![5-Mins in light mode: a white page with dark text, the Dark mode toggle switched off](docs/images/theme-light.png) | ![5-Mins in dark mode: a deep navy page with light text, the Dark mode toggle switched on](docs/images/theme-dark.png) |
+| ![The home page in light mode: a pale page with a light world map and the Dark mode toggle switched off](docs/images/theme-light.png) | ![The home page in dark mode: a deep navy page with a dark world map and the Dark mode toggle switched on](docs/images/theme-dark.png) |
 
-While an alert is active, everybody at the location can check in as safe:
-
-![The Miami location during an alert: Ada Lovelace is marked "Safe" with a timestamp and an undo button, Grace Hopper still has an "I'm safe" button, and the summary reads "Safety check-in: 1 of 2 marked safe · 1 still to confirm."](docs/images/safety-check-in.png)
-
-5-Mins installs as an app, with an install button in supported browsers and
-instructions for every other platform:
-
-![The 5-Mins page with an "Install this app on your device" panel at the bottom: an Install app button and instructions for Android, iPhone and iPad, Windows and Linux, and macOS](docs/images/install-panel.png)
-
-## Features
-
-- Runs on **Android, iPhone, iPad, Windows, macOS and Linux** — it is an
-  installable Progressive Web App as well as a website, so it opens in its own
-  window and still starts when the device is offline.
-- Add any number of locations: type a city name and pick it from the
-  autocomplete, use the browser's "Use my location" button, or enter
-  coordinates by hand.
-- City suggestions cover every known city worldwide and fill in the latitude
-  and longitude of the city you choose.
-- Add and remove the people who should be alerted for each location, with an
-  email address or phone number for each.
-- See every alert reported for a location over the last **7 days**, sorted with
-  the most severe first and colour coded by severity (Extreme, Severe, Moderate,
-  Minor).
-- While an alert is active, each person can **mark themselves as safe** for that
-  location. The check-in is timestamped, can be undone, and a summary shows how
-  many people are still to confirm. When a new alert is triggered for the
-  location, the check-ins are cleared so everybody confirms again.
-- Refresh all alerts on demand.
-- Dark and light themes: the site follows the system colour scheme, and the
-  header toggle pins a theme that is remembered on the next visit.
-- Locations and people are stored in the browser's `localStorage`, so they
-  survive reloads and never leave your device.
-
-## Install it on your device
-
-5-Mins is a Progressive Web App, so the same site can be installed as an app on
-every major platform. Open https://charles2ke.github.io/5-Mins/ and then:
-
-| Platform | How to install |
-| --- | --- |
-| Android | Chrome, Edge or Samsung Internet: tap **Install app** in the "Install this app on your device" panel, or the browser menu → **Add to Home screen**. |
-| iOS and iPadOS | Safari: tap **Share** → **Add to Home Screen**. |
-| Windows | Chrome or Edge: click **Install app**, or the install icon at the right of the address bar. |
-| Linux | Chrome, Chromium or Edge: click **Install app**, or the install icon in the address bar. |
-| macOS | Safari 17 or later: **File → Add to Dock**. Chrome or Edge: click **Install app**. |
-
-The installed app runs full screen with its own icon, keeps working while
-offline (the last version of the app is cached on the device) and stores
-locations and people on that device only. Alerts themselves are always fetched
-live, so a stale warning is never shown. Browsers that cannot install web apps
-still open 5-Mins as an ordinary website — Firefox for Android, for example,
-adds it to the home screen from its own menu, and Firefox on the desktop keeps
-it as a normal tab.
+![The 5-Mins page with an "Install this app on your device" panel](docs/images/install-panel.png)
 
 ## Alert sources
 
@@ -99,14 +102,20 @@ Every feed is public and needs no API key. Each one is queried independently, so
 if a feed is unavailable the alerts from the others are still shown along with
 an explanation.
 
+The world map outlines come from the
+[Natural Earth](https://www.naturalearthdata.com/) 1:110m land vectors, which
+are in the public domain. They are embedded as a simplified SVG path in
+`assets/js/world-land.js`, so the map needs no map tiles, no API key and no
+network access.
+
 ## City search
 
-The location name field is an autocomplete backed by the
+The location name field on the setup page is an autocomplete backed by the
 [Open-Meteo geocoding API](https://open-meteo.com/en/docs/geocoding-api), a
 free, key-less search over the worldwide GeoNames city database. Choosing a
-suggestion fills in the coordinates of that city. If the lookup is unavailable
-the field keeps working as a plain text box, so a location can always be added
-by entering coordinates manually.
+suggestion fills in the coordinates, city and country of that city. If the
+lookup is unavailable the field keeps working as a plain text box, so a
+location can always be added by entering coordinates manually.
 
 ## Running locally
 
@@ -117,10 +126,6 @@ repository root with any static server:
 npm start          # python3 -m http.server 4173
 # then open http://127.0.0.1:4173
 ```
-
-The service worker (`sw.js`) and the web app manifest
-(`manifest.webmanifest`) live in the repository root, so serving that directory
-is enough to install the app locally too.
 
 ## Tests
 
@@ -135,6 +140,12 @@ npm test
 
 The `Tests` workflow runs them on every push and pull request and uploads the
 Playwright HTML report (including screenshots) as a build artifact.
+
+## Install it on your device
+
+Open https://charles2ke.github.io/5-Mins/ in a modern browser. Chrome and Edge
+offer **Install app**; Safari on iPhone, iPad and macOS offers **Add to Home
+Screen** or **Add to Dock** from its Share or File menu.
 
 ## Deployment
 

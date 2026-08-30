@@ -26,7 +26,7 @@ jobs:
       - name: Stage site
         run: |
           mkdir _site
-          cp index.html manifest.webmanifest sw.js _site/
+          cp index.html setup.html manifest.webmanifest sw.js _site/
           cp -R assets _site/
       - uses: actions/upload-pages-artifact@v3
         with:
