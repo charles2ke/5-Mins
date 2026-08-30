@@ -228,13 +228,9 @@ function renderSummary(shown) {
     (total, location) => total + resultFor(location).alerts.length,
     0,
   );
-  const affected = shown.filter(
-    (location) => resultFor(location).alerts.length > 0,
-  ).length;
-
   parts.push(
     `${pluralise(totalAlerts, "alert", "alerts")} in the last ${ALERT_WINDOW_DAYS} days across ${pluralise(
-      affected,
+      shown.length,
       "location",
       "locations",
     )}.`,
@@ -259,7 +255,12 @@ function selectLocation(id) {
   render();
   const node = locationList.querySelector(`[data-location-id="${CSS.escape(id)}"]`);
   if (node && selectedId) {
-    node.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    node.scrollIntoView({
+      block: "nearest",
+      behavior: globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
+    });
   }
 }
 

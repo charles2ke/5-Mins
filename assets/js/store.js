@@ -26,8 +26,8 @@ function normaliseTimestamp(value) {
  */
 export function normaliseLocation(input) {
   const name = String(input.name ?? "").trim();
-  const city = String(input.city ?? "").trim();
-  const country = String(input.country ?? "").trim();
+  const city = String(input.city ?? "").trim().replace(/\s+/g, " ");
+  const country = String(input.country ?? "").trim().replace(/\s+/g, " ");
   const lat = Number(input.lat);
   const lon = Number(input.lon);
 
