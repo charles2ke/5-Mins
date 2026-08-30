@@ -104,6 +104,12 @@ function toIsoDate(value) {
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
+/** Comparable timestamp for a feed date; unusable dates sort oldest. */
+function timeValue(value) {
+  const iso = toIsoDate(value);
+  return iso ? Date.parse(iso) : Number.NEGATIVE_INFINITY;
+}
+
 function isNearby(lat, lon, coordinates, radiusKm) {
   const point = firstCoordinate(coordinates);
   if (!point) return false;
@@ -267,12 +273,14 @@ function mapNaturalEvents(payload, { lat, lon }) {
   const events = Array.isArray(payload?.events) ? payload.events : [];
   return events.flatMap((event, index) => {
     const geometries = Array.isArray(event?.geometry) ? event.geometry : [];
-    // Events are tracked over time; the last usable geometry is the newest one.
-    const latest = geometries.reduce(
-      (found, geometry) =>
-        firstCoordinate(geometry?.coordinates) ? geometry : found,
-      null,
-    );
+    // Events are tracked over time, so use the most recently dated position.
+    const latest = geometries.reduce((found, geometry) => {
+      if (!firstCoordinate(geometry?.coordinates)) return found;
+      if (!found) return geometry;
+      return timeValue(geometry.date) > timeValue(found.date)
+        ? geometry
+        : found;
+    }, null);
     if (
       !latest ||
       !isNearby(lat, lon, latest.coordinates, GLOBAL_EVENT_RADIUS_KM)

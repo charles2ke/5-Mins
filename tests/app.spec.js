@@ -269,9 +269,10 @@ test("asks every source for the last seven days", async ({ page }) => {
   expect(daysBefore(usgs.searchParams.get("starttime"))).toBeCloseTo(7, 1);
 
   const gdacs = new URL(find("https://www.gdacs.org/"));
-  expect(daysBefore(`${gdacs.searchParams.get("fromdate")}T00:00:00Z`)).toBeLessThan(
-    8,
-  );
+  const gdacsFrom = daysBefore(`${gdacs.searchParams.get("fromdate")}T00:00:00Z`);
+  // GDACS only accepts whole days, so the window starts on the seventh day back.
+  expect(gdacsFrom).toBeGreaterThan(6.9);
+  expect(gdacsFrom).toBeLessThan(8.1);
 
   const eonet = new URL(find("https://eonet.gsfc.nasa.gov/"));
   expect(eonet.searchParams.get("days")).toBe("7");
