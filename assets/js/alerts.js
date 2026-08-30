@@ -187,8 +187,8 @@ function mapWeatherAlerts(payload) {
         : "Unknown",
       headline: props.headline || props.description || "",
       area: props.areaDesc || "",
-      effective: props.effective || props.onset || null,
-      expires: props.expires || props.ends || null,
+      effective: toIsoDate(props.effective || props.onset),
+      expires: toIsoDate(props.expires || props.ends),
       url: httpUrl(props.id, "https://www.weather.gov/"),
     };
   });
