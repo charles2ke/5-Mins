@@ -2,10 +2,11 @@
 
 Provide users an alert before a catastrophe or disaster. The crucial minutes to save lives. 
 
-5-Mins is a small static website where you add the **locations** you care about
+5-Mins is a small site where you add the **locations** you care about
 and the **people** who must be warned about each of them. For every location the
 site pulls in all the disaster and catastrophe alerts that are currently
-available for those coordinates.
+available for those coordinates. It runs in the browser and installs as an app
+on Android, iOS, iPadOS, Windows, macOS and Linux.
 
 **Live site:** https://charles2ke.github.io/5-Mins/ (published automatically from
 `main`).
@@ -21,6 +22,11 @@ Each location lists the people to warn next to every alert that is currently
 active there, most severe first:
 
 ![A saved Miami location with one person to alert and three active alerts: an extreme hurricane warning, a severe earthquake and a moderate flood watch](docs/images/locations-and-alerts.png)
+
+5-Mins installs as an app, with an install button in supported browsers and
+instructions for every other platform:
+
+![The "Install this app on your device" panel with an Install app button and instructions for Android, iPhone and iPad, Windows and Linux, and macOS](docs/images/install-app.png)
 
 ## Features
 
