@@ -55,7 +55,7 @@ function numberOrNull(value) {
 function isoOrNull(value) {
   if (value === null || value === undefined || value === "") return null;
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+  return Number.isNaN(date.getTime()) ? null : value;
 }
 
 /**
