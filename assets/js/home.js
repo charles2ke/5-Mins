@@ -1,6 +1,6 @@
 import { ALERT_WINDOW_DAYS, fetchAlerts, SEVERITY_ORDER } from "./alerts.js";
 import { describePlace, matchesFilters, placeKey, placeOptions } from "./places.js";
-import { loadLocations } from "./store.js";
+import { loadLocations, saveLocations } from "./store.js";
 import { drawGraticule, drawLand, drawMarkers } from "./worldmap.js";
 
 const refreshButton = document.querySelector("#refresh-alerts");
@@ -15,6 +15,7 @@ const noMatches = document.querySelector("#no-matches");
 
 const locationTemplate = document.querySelector("#location-template");
 const alertTemplate = document.querySelector("#alert-template");
+const personTemplate = document.querySelector("#person-template");
 
 const locations = loadLocations();
 /** Alert results per location id: `{ status, alerts, errors }`. */
@@ -78,6 +79,35 @@ function visibleLocations() {
 
 function pluralise(count, singular, plural) {
   return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function persist() {
+  saveLocations(locations);
+}
+
+function safeCount(location) {
+  return location.people.filter((person) => person.safeAt).length;
+}
+
+function syncSafetyCheckIns(location, { alerts, errors }) {
+  const current = new Set(alerts.map((alert) => alert.id));
+  if (current.size === 0 && errors.length > 0) return;
+
+  const known = new Set(location.alertIds);
+  const triggered = [...current].some((id) => !known.has(id));
+  if (triggered) {
+    for (const person of location.people) {
+      person.safeAt = null;
+    }
+  }
+
+  const next = errors.length > 0 ? new Set([...known, ...current]) : current;
+  const sameAlerts =
+    next.size === known.size && [...next].every((id) => known.has(id));
+  if (triggered || !sameAlerts) {
+    location.alertIds = [...next];
+    persist();
+  }
 }
 
 /* ---------------------------------------------------------------- filters */
@@ -266,6 +296,60 @@ function renderAlerts(node, alerts) {
   }
 }
 
+function renderPeople(node, location, alerting) {
+  const list = node.querySelector("[data-people]");
+  const summary = node.querySelector("[data-safety-summary]");
+  list.textContent = "";
+
+  for (const person of location.people) {
+    const item = personTemplate.content.firstElementChild.cloneNode(true);
+    const checkedIn = Boolean(person.safeAt);
+    const showSafetyState = checkedIn && alerting;
+    item.dataset.safe = showSafetyState ? "true" : "false";
+    item.querySelector("[data-person-name]").textContent = person.name;
+    item.querySelector("[data-person-contact]").textContent = person.contact;
+
+    const safety = item.querySelector("[data-person-safety]");
+    safety.hidden = !showSafetyState;
+    safety.textContent = showSafetyState
+      ? `Safe · ${formatDate(person.safeAt) ?? "just now"}`
+      : "";
+
+    const markSafe = item.querySelector("[data-mark-safe]");
+    markSafe.hidden = checkedIn || !alerting;
+    markSafe.setAttribute("aria-label", `I'm safe: ${person.name}`);
+    markSafe.addEventListener("click", () => {
+      person.safeAt = new Date().toISOString();
+      persist();
+      render();
+    });
+
+    const undoSafe = item.querySelector("[data-undo-safe]");
+    undoSafe.hidden = !showSafetyState;
+    undoSafe.setAttribute("aria-label", `Undo safe: ${person.name}`);
+    undoSafe.addEventListener("click", () => {
+      person.safeAt = null;
+      persist();
+      render();
+    });
+    list.append(item);
+  }
+
+  if (!alerting || location.people.length === 0) {
+    summary.hidden = true;
+    summary.textContent = "";
+    return;
+  }
+  const safe = safeCount(location);
+  const waiting = location.people.length - safe;
+  summary.hidden = false;
+  summary.dataset.allSafe = waiting === 0 ? "true" : "false";
+  summary.textContent =
+    waiting === 0
+      ? `Safety check-in: everyone (${location.people.length}) marked safe.`
+      : `Safety check-in: ${safe} of ${location.people.length} marked safe · ${waiting} still to confirm.`;
+}
+
 function renderLocation(location) {
   const result = resultFor(location);
   const node = locationTemplate.content.firstElementChild.cloneNode(true);
@@ -307,6 +391,9 @@ function renderLocation(location) {
           "people",
         )} to notify.`,
       );
+      if (location.people.length > 0) {
+        messages.push(`${safeCount(location)} marked safe.`);
+      }
     }
     messages.push(...result.errors);
     status.textContent = messages.join(" ");
@@ -318,6 +405,7 @@ function renderLocation(location) {
       ? "Nobody will be alerted for this location yet."
       : `Will alert: ${location.people.map((person) => person.name).join(", ")}.`;
 
+  renderPeople(node, location, result.alerts.length > 0);
   renderAlerts(node, result.alerts);
   locationList.append(node);
 }
@@ -344,6 +432,7 @@ async function loadAlertsFor(location) {
   results.set(location.id, { status: "loading", alerts: [], errors: [] });
   try {
     const { alerts, errors } = await fetchAlerts(location);
+    syncSafetyCheckIns(location, { alerts, errors });
     results.set(location.id, { status: "ready", alerts, errors });
   } catch (error) {
     results.set(location.id, {

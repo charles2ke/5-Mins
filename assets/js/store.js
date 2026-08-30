@@ -11,6 +11,15 @@ function isFiniteNumber(value) {
   return typeof value === "number" && Number.isFinite(value);
 }
 
+/** Returns an ISO timestamp, or null when the value is missing or unusable. */
+function normaliseTimestamp(value) {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
 /**
  * Validates and normalises a location. City and country are optional and are
  * what the home page filters use. Throws when the input is unusable.
@@ -48,6 +57,11 @@ export function normaliseLocation(input) {
           }
         })
       : [],
+    // Ids of the alerts already seen for this location, so that a newly
+    // triggered alert can ask everybody to check in again.
+    alertIds: Array.isArray(input.alertIds)
+      ? input.alertIds.filter((id) => typeof id === "string")
+      : [],
   };
 }
 
@@ -65,7 +79,13 @@ export function normalisePerson(input) {
     throw new Error("An email address or phone number is required.");
   }
 
-  return { id: input.id || createId(), name, contact };
+  return {
+    id: input.id || createId(),
+    name,
+    contact,
+    // When the person last marked themselves safe, or null when they have not.
+    safeAt: normaliseTimestamp(input.safeAt),
+  };
 }
 
 export function loadLocations(storage = globalThis.localStorage) {

@@ -28,6 +28,8 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
   the most severe first and colour coded by severity (Extreme, Severe, Moderate,
   Minor).
 - Refresh all alerts on demand.
+- While an alert is active, each person can mark themselves safe. A new alert
+  clears those check-ins so everyone confirms again.
 
 ### Setup page
 
@@ -46,6 +48,8 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
   header toggle pins a theme that is remembered on the next visit.
 - Locations and people are stored in the browser's `localStorage`, so they
   survive reloads and never leave your device.
+- Runs as an installable Progressive Web App on Android, iOS, iPadOS, Windows,
+  macOS and Linux, and can reopen offline.
 
 ## Screenshots
 
@@ -81,6 +85,8 @@ or dark for good:
 | Light | Dark |
 | --- | --- |
 | ![The home page in light mode: a pale page with a light world map and the Dark mode toggle switched off](docs/images/theme-light.png) | ![The home page in dark mode: a deep navy page with a dark world map and the Dark mode toggle switched on](docs/images/theme-dark.png) |
+
+![The 5-Mins page with an "Install this app on your device" panel](docs/images/install-panel.png)
 
 ## Alert sources
 
@@ -134,6 +140,12 @@ npm test
 
 The `Tests` workflow runs them on every push and pull request and uploads the
 Playwright HTML report (including screenshots) as a build artifact.
+
+## Install it on your device
+
+Open https://charles2ke.github.io/5-Mins/ in a modern browser. Chrome and Edge
+offer **Install app**; Safari on iPhone, iPad and macOS offers **Add to Home
+Screen** or **Add to Dock** from its Share or File menu.
 
 ## Deployment
 

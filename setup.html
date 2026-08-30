@@ -2,17 +2,28 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
     <title>5-Mins &mdash; setup: locations and people</title>
     <meta
       name="description"
       content="Add the locations you care about and the people who should be warned about a disaster or catastrophe there."
     />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f1f5f9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
     <link rel="stylesheet" href="assets/styles.css" />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>&#9888;</text></svg>"
-    />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
+    <link rel="icon" href="assets/icons/icon-192.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+    <meta name="application-name" content="5-Mins" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="5-Mins" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <script>
       // Pin the saved theme before the first paint so the page never flashes
       // the wrong colours. Keep the key in sync with assets/js/theme.js.
@@ -251,5 +262,6 @@
 
     <script type="module" src="assets/js/theme.js"></script>
     <script type="module" src="assets/js/setup.js"></script>
+    <script type="module" src="assets/js/pwa.js"></script>
   </body>
 </html>
