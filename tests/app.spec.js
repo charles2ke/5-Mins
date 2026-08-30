@@ -237,6 +237,7 @@ test("switches theme with the toggle and keeps the choice", async ({
 
   await page.getByRole("switch", { name: "Dark mode" }).click();
   await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await expect(page.locator("body")).toHaveCSS(
     "background-color",
     "rgb(241, 245, 249)",
