@@ -37,6 +37,29 @@ Provide users an alert before a catastrophe or disaster.
 - Locations and people are stored in the browser's `localStorage`, so they
   survive reloads and never leave your device.
 
+## Screenshots
+
+These are captured by the Playwright suite, so they always match the current
+behaviour of the site.
+
+![Home page showing the world map with markers for Miami and Tokyo and every active alert listed below it](docs/images/home-world-map.png)
+
+*Home — every current alert on the world map, with the alert list underneath.*
+
+![Home page filtered to Japan, showing a single marker and only the Tokyo location](docs/images/home-filtered-by-country.png)
+
+*Home — filtered to a single country; the city filter narrows to that country's
+cities and the filters are kept in the URL.*
+
+![Setup page showing a location with its city, country and coordinates](docs/images/setup-page.png)
+
+*Setup — add the locations you watch, with an optional city and country that
+power the home page filters.*
+
+![Setup page showing a person added to the people to alert list for a location](docs/images/people-to-alert.png)
+
+*Setup — add the people who must be warned about each location.*
+
 ## Alert sources
 
 | Source | Coverage |
