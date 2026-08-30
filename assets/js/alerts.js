@@ -160,8 +160,10 @@ function nwsTime(date) {
  * locations abroad (Dublin, Tokyo, ...) skip it rather than report an error.
  */
 const NWS_COVERAGE = [
-  // Mainland United States, Alaska and the surrounding marine zones.
-  { minLat: 23, maxLat: 72, minLon: -180, maxLon: -64 },
+  // Mainland United States and surrounding marine zones.
+  { minLat: 23, maxLat: 50, minLon: -127, maxLon: -64 },
+  // Alaska and nearby marine zones.
+  { minLat: 50, maxLat: 72, minLon: -170, maxLon: -129 },
   // The western Aleutians, across the antimeridian.
   { minLat: 47, maxLat: 56, minLon: 170, maxLon: 180 },
   // Hawaii.
