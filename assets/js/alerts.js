@@ -7,6 +7,9 @@ const SWPC_ENDPOINT = "https://services.swpc.noaa.gov/products/alerts.json";
 
 const SEVERITY_ORDER = ["Extreme", "Severe", "Moderate", "Minor", "Unknown"];
 
+/** `area` used by alerts that affect the whole planet. */
+const WORLDWIDE_AREA = "Worldwide";
+
 /** Alerts are shown for the week leading up to now. */
 const ALERT_WINDOW_DAYS = 7;
 /** Earthquakes below this magnitude are not treated as a disaster alert. */
@@ -133,11 +136,28 @@ async function fetchJson(url, fetchImpl) {
   return response.json();
 }
 
+/**
+ * The National Weather Service rejects coordinates with more than four decimal
+ * places (about ten metres of precision) with a 400 response.
+ */
+function nwsPoint(value) {
+  return String(Number(Number(value).toFixed(4)));
+}
+
+/**
+ * The National Weather Service also rejects timestamps that carry
+ * milliseconds, which `Date.prototype.toISOString` always adds, so the
+ * fractional seconds are dropped before the UTC designator.
+ */
+function nwsTime(date) {
+  return `${date.toISOString().slice(0, 19)}Z`;
+}
+
 function nwsUrl(lat, lon, now) {
   const params = new URLSearchParams({
-    point: `${lat},${lon}`,
-    start: windowStart(now).toISOString(),
-    end: now.toISOString(),
+    point: `${nwsPoint(lat)},${nwsPoint(lon)}`,
+    start: nwsTime(windowStart(now)),
+    end: nwsTime(now),
     status: "actual",
     message_type: "alert",
     limit: "500",
@@ -344,7 +364,7 @@ function mapSpaceWeatherAlerts(payload, { now }) {
         event: `Space weather ${message.kind}`,
         severity: spaceWeatherSeverity(entry?.message),
         headline: message.text,
-        area: "Worldwide",
+        area: WORLDWIDE_AREA,
         effective: issued,
         expires: null,
         url: "https://www.swpc.noaa.gov/noaa-scales-explanation",
@@ -432,4 +452,13 @@ export async function fetchAlerts(
   return { alerts, errors };
 }
 
-export { ALERT_WINDOW_DAYS, SEVERITY_ORDER, magnitudeSeverity };
+/**
+ * True for alerts that affect the whole planet rather than one place, such as
+ * the NOAA space weather alerts. They are listed once, under "Worldwide",
+ * instead of being repeated on every location.
+ */
+export function isWorldwideAlert(alert) {
+  return String(alert?.area ?? "").trim().toLowerCase() === WORLDWIDE_AREA.toLowerCase();
+}
+
+export { ALERT_WINDOW_DAYS, SEVERITY_ORDER, WORLDWIDE_AREA, magnitudeSeverity };

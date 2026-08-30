@@ -5,8 +5,8 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
 5-Mins is a small static website with two pages:
 
 - **Home** — a world map of every disaster or catastrophe alert reported for
-  the locations you watch over the last 7 days, with filters by country and
-  city.
+  the locations you watch over the last 7 days, with filters by country, city
+  and severity.
 - **Setup** — where you add the **locations** you care about and the **people**
   who must be warned about each of them.
 
@@ -19,9 +19,12 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
 
 - World map with one marker per location, coloured by the most severe alert
   reported there in the last 7 days and sized by how many alerts there are.
-- Filter the map and the list by **country** or by **city**. The city filter
-  only offers cities from the selected country, and both filters are kept in the
-  URL (`?country=japan&city=tokyo`) so a filtered view can be shared.
+- Filter the map and the list by **country**, **city** or **severity**. The city
+  filter only offers cities from the selected country, and every filter is kept
+  in the URL (`?country=japan&city=tokyo&severity=extreme`) so a filtered view
+  can be shared.
+- Every location card **folds away** with a click on its header; the alert count
+  and the worst severity stay visible while it is folded.
 - Click (or focus and press <kbd>Enter</kbd> on) a marker to highlight that
   location in the list below the map.
 - A **live weather card** for every location: current temperature, a drawn
@@ -31,6 +34,9 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
 - Every alert reported for every location over the last **7 days**, sorted with
   the most severe first and colour coded by severity (Extreme, Severe, Moderate,
   Minor).
+- Alerts that reach the whole planet, such as the NOAA space weather alerts, are
+  listed once under a **Worldwide** card instead of on every location, and that
+  card carries no local weather.
 - Refresh all alerts on demand.
 - While an alert is active, each person can mark themselves safe. A new alert
   clears those check-ins so everyone confirms again.
@@ -68,6 +74,21 @@ behaviour of the site.
 
 *Home — filtered to a single country; the city filter narrows to that country's
 cities and the filters are kept in the URL.*
+
+![Home page with a Worldwide card listing the NOAA space weather alert once, below the Miami and Tokyo cards](docs/images/home-worldwide-card.png)
+
+*Home — alerts that reach the whole planet are listed once under Worldwide, with
+no local weather card.*
+
+![Home page filtered to Extreme alerts, showing only the extreme alerts of each location](docs/images/home-filtered-by-severity.png)
+
+*Home — filtered by severity; only alerts of the chosen severity are listed and
+locations without one drop off the map.*
+
+![Home page with the Miami location card folded, showing only its heading, alert count and severity badge](docs/images/home-folded-location.png)
+
+*Home — a folded location card keeps its alert count and worst severity in
+view.*
 
 ![A location card with a live weather panel showing 28°C, a thunderstorm icon, feels like, high and low, wind, humidity and precipitation](docs/images/live-weather-card.png)
 
