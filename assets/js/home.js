@@ -117,7 +117,7 @@ function filterAlerts(alerts) {
   return alerts.filter(matchesSeverity);
 }
 
-/** The alerts each shown location has in common, listed once. */
+/** Every worldwide alert reported for `shown`, each listed only once. */
 function worldwideAlerts(shown) {
   const seen = new Set();
   const alerts = [];
@@ -673,8 +673,7 @@ function render() {
   const worldwide = worldwideAlerts(placeMatches());
 
   emptyState.hidden = locations.length > 0;
-  noMatches.hidden =
-    locations.length === 0 || shown.length > 0 || worldwide.length > 0;
+  noMatches.hidden = locations.length === 0 || shown.length > 0;
 
   locationList.textContent = "";
   for (const location of shown) {

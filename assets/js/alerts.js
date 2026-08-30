@@ -9,6 +9,7 @@ const SEVERITY_ORDER = ["Extreme", "Severe", "Moderate", "Minor", "Unknown"];
 
 /** `area` used by alerts that affect the whole planet. */
 const WORLDWIDE_AREA = "Worldwide";
+const WORLDWIDE_AREA_KEY = WORLDWIDE_AREA.toLowerCase();
 
 /** Alerts are shown for the week leading up to now. */
 const ALERT_WINDOW_DAYS = 7;
@@ -458,7 +459,7 @@ export async function fetchAlerts(
  * instead of being repeated on every location.
  */
 export function isWorldwideAlert(alert) {
-  return String(alert?.area ?? "").trim().toLowerCase() === WORLDWIDE_AREA.toLowerCase();
+  return String(alert?.area ?? "").trim().toLowerCase() === WORLDWIDE_AREA_KEY;
 }
 
 export { ALERT_WINDOW_DAYS, SEVERITY_ORDER, WORLDWIDE_AREA, magnitudeSeverity };
