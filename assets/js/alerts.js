@@ -154,6 +154,41 @@ function nwsTime(date) {
   return `${date.toISOString().slice(0, 19)}Z`;
 }
 
+/**
+ * Latitude and longitude boxes the National Weather Service issues alerts for.
+ * The feed answers 400 for a point it cannot resolve to a US forecast zone, so
+ * locations abroad (Dublin, Tokyo, ...) skip it rather than report an error.
+ */
+const NWS_COVERAGE = [
+  // Mainland United States and surrounding marine zones.
+  { minLat: 23, maxLat: 50, minLon: -127, maxLon: -64 },
+  // Alaska and nearby marine zones.
+  { minLat: 50, maxLat: 72, minLon: -170, maxLon: -129 },
+  // The western Aleutians, across the antimeridian.
+  { minLat: 47, maxLat: 56, minLon: 170, maxLon: 180 },
+  // Hawaii.
+  { minLat: 15, maxLat: 24, minLon: -163, maxLon: -152 },
+  // Puerto Rico and the US Virgin Islands.
+  { minLat: 17, maxLat: 19, minLon: -68, maxLon: -64 },
+  // Guam and the Northern Mariana Islands.
+  { minLat: 12, maxLat: 21, minLon: 143, maxLon: 147 },
+  // American Samoa.
+  { minLat: -16, maxLat: -12, minLon: -172, maxLon: -168 },
+];
+
+function coveredByNws(lat, lon) {
+  const latitude = Number(lat);
+  const longitude = Number(lon);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return false;
+  return NWS_COVERAGE.some(
+    (box) =>
+      latitude >= box.minLat &&
+      latitude <= box.maxLat &&
+      longitude >= box.minLon &&
+      longitude <= box.maxLon,
+  );
+}
+
 function nwsUrl(lat, lon, now) {
   const params = new URLSearchParams({
     point: `${nwsPoint(lat)},${nwsPoint(lon)}`,
@@ -387,11 +422,16 @@ export async function fetchAlerts(
 ) {
   const context = { lat, lon, now };
   const sources = [
-    {
-      name: "US National Weather Service",
-      url: nwsUrl(lat, lon, now),
-      map: mapWeatherAlerts,
-    },
+    // Only asked for US locations: the feed answers 400 elsewhere.
+    ...(coveredByNws(lat, lon)
+      ? [
+          {
+            name: "US National Weather Service",
+            url: nwsUrl(lat, lon, now),
+            map: mapWeatherAlerts,
+          },
+        ]
+      : []),
     {
       name: "USGS Earthquake Hazards Program",
       url: usgsUrl(lat, lon, now),
