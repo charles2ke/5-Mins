@@ -159,6 +159,32 @@ function buildFeeds(now = Date.now()) {
   };
 }
 
+/** Open-Meteo current conditions, stubbed so the card is deterministic. */
+function buildWeather(now = Date.now()) {
+  return {
+    current_units: {
+      temperature_2m: "°C",
+      wind_speed_10m: "km/h",
+      precipitation: "mm",
+    },
+    current: {
+      time: new Date(now).toISOString().slice(0, 16),
+      temperature_2m: 28.4,
+      apparent_temperature: 31.2,
+      relative_humidity_2m: 74,
+      precipitation: 1.2,
+      weather_code: 95,
+      wind_speed_10m: 46.8,
+      is_day: 1,
+    },
+    daily: {
+      time: [new Date(now).toISOString().slice(0, 10)],
+      temperature_2m_max: [30.1],
+      temperature_2m_min: [22.6],
+    },
+  };
+}
+
 const miami = {
   id: "miami",
   name: "Miami home",
@@ -196,6 +222,9 @@ test.beforeEach(async ({ page }) => {
   );
   await page.route("https://services.swpc.noaa.gov/**", (route) =>
     route.fulfill({ json: feeds.spaceWeather }),
+  );
+  await page.route("https://api.open-meteo.com/**", (route) =>
+    route.fulfill({ json: buildWeather() }),
   );
 });
 
@@ -503,4 +532,93 @@ test("carries the pinned theme over to the setup page", async ({ page }) => {
     "aria-checked",
     "true",
   );
+});
+
+test("shows a live weather card for every location", async ({
+  page,
+}, testInfo) => {
+  await seed(page, [miami, tokyo]);
+  await page.goto("/");
+
+  const cards = page.locator("[data-weather]");
+  await expect(cards).toHaveCount(2);
+  await expect(cards.first()).toHaveAttribute("data-state", "ready");
+  await expect(cards.first().locator("[data-weather-temp]")).toHaveText("28°C");
+  await expect(cards.first().locator("[data-weather-condition]")).toHaveText(
+    "Thunderstorm",
+  );
+  await expect(cards.first().locator(".weather-icon")).toBeVisible();
+  await expect(cards.first().locator("[data-weather-metrics]")).toContainText(
+    "31°C",
+  );
+  await expect(cards.first().locator("[data-weather-metrics]")).toContainText(
+    "30°C / 23°C",
+  );
+  await expect(cards.first().locator("[data-weather-metrics]")).toContainText(
+    "47 km/h",
+  );
+  await expect(cards.first().locator("[data-weather-metrics]")).toContainText(
+    "74%",
+  );
+  // A thunderstorm with strong wind is called out on the card itself.
+  await expect(cards.first()).toHaveAttribute("data-rough", "true");
+
+  await testInfo.attach("live-weather-card", {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: "image/png",
+  });
+});
+
+test("asks Open-Meteo for the current conditions of each location", async ({
+  page,
+}) => {
+  const requested = [];
+  page.on("request", (request) => requested.push(request.url()));
+
+  await seed(page, [miami]);
+  await page.goto("/");
+  await expect(page.locator("[data-weather]")).toHaveAttribute(
+    "data-state",
+    "ready",
+  );
+
+  const forecast = new URL(
+    requested.find((url) => url.startsWith("https://api.open-meteo.com/")),
+  );
+  expect(forecast.searchParams.get("latitude")).toBe("25.7617");
+  expect(forecast.searchParams.get("longitude")).toBe("-80.1918");
+  expect(forecast.searchParams.get("current")).toContain("temperature_2m");
+});
+
+test("says when the live weather is unavailable", async ({ page }) => {
+  await page.route("https://api.open-meteo.com/**", (route) =>
+    route.fulfill({ status: 503, body: "boom" }),
+  );
+  await seed(page, [miami]);
+  await page.goto("/");
+
+  const card = page.locator("[data-weather]");
+  await expect(card).toHaveAttribute("data-state", "error");
+  await expect(card).toContainText(
+    "Live weather unavailable: Request failed with status 503",
+  );
+  // The alerts are still listed when only the weather lookup fails.
+  await expect(page.locator("[data-alert]")).toHaveCount(6);
+});
+
+test("refreshes the live weather on demand", async ({ page }) => {
+  await seed(page, [miami]);
+  await page.goto("/");
+  await expect(page.locator("[data-weather-temp]")).toHaveText("28°C");
+
+  const colder = buildWeather();
+  colder.current.temperature_2m = 4.2;
+  colder.current.weather_code = 71;
+  await page.route("https://api.open-meteo.com/**", (route) =>
+    route.fulfill({ json: colder }),
+  );
+  await page.getByRole("button", { name: "Refresh alerts" }).click();
+
+  await expect(page.locator("[data-weather-temp]")).toHaveText("4°C");
+  await expect(page.locator("[data-weather-condition]")).toHaveText("Light snow");
 });

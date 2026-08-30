@@ -2,6 +2,12 @@ import { ALERT_WINDOW_DAYS, fetchAlerts, SEVERITY_ORDER } from "./alerts.js";
 import { describePlace, matchesFilters, placeKey, placeOptions } from "./places.js";
 import { loadLocations, saveLocations } from "./store.js";
 import { drawGraticule, drawLand, drawMarkers } from "./worldmap.js";
+import {
+  createWeatherIcon,
+  fetchWeather,
+  formatTemperature,
+  isRoughWeather,
+} from "./weather.js";
 
 const refreshButton = document.querySelector("#refresh-alerts");
 const clearFiltersButton = document.querySelector("#clear-filters");
@@ -20,6 +26,8 @@ const personTemplate = document.querySelector("#person-template");
 const locations = loadLocations();
 /** Alert results per location id: `{ status, alerts, errors }`. */
 const results = new Map();
+/** Live weather per location id: `{ status, weather, error }`. */
+const weatherResults = new Map();
 const filters = { country: "", city: "" };
 /** Labels for filters that came from the URL and match no location. */
 const filterLabels = { country: "", city: "" };
@@ -57,6 +65,16 @@ function errorMessage(error) {
 
 function resultFor(location) {
   return results.get(location.id) ?? { status: "loading", alerts: [], errors: [] };
+}
+
+function weatherFor(location) {
+  return (
+    weatherResults.get(location.id) ?? {
+      status: "loading",
+      weather: null,
+      error: null,
+    }
+  );
 }
 
 function topSeverity(alerts) {
@@ -351,6 +369,98 @@ function renderPeople(node, location, alerting) {
       : `Safety check-in: ${safe} of ${location.people.length} marked safe · ${waiting} still to confirm.`;
 }
 
+function addMetric(list, term, value) {
+  if (!value) return;
+  // Each metric is wrapped so its label and value stay together in the grid.
+  const wrapper = document.createElement("div");
+  const dt = document.createElement("dt");
+  dt.textContent = term;
+  const dd = document.createElement("dd");
+  dd.textContent = value;
+  wrapper.append(dt, dd);
+  list.append(wrapper);
+}
+
+function renderWeather(node, location) {
+  const card = node.querySelector("[data-weather]");
+  const status = card.querySelector("[data-weather-status]");
+  const figure = card.querySelector("[data-weather-icon]");
+  const temp = card.querySelector("[data-weather-temp]");
+  const condition = card.querySelector("[data-weather-condition]");
+  const observed = card.querySelector("[data-weather-observed]");
+  const metrics = card.querySelector("[data-weather-metrics]");
+  const { status: state, weather, error } = weatherFor(location);
+
+  figure.textContent = "";
+  metrics.textContent = "";
+
+  if (state !== "ready" || !weather) {
+    card.dataset.state = state === "loading" ? "loading" : "error";
+    delete card.dataset.condition;
+    delete card.dataset.rough;
+    for (const element of [temp, condition, observed, metrics]) {
+      element.hidden = true;
+    }
+    status.hidden = false;
+    status.textContent =
+      state === "loading"
+        ? "Loading live weather…"
+        : `Live weather unavailable: ${error}`;
+    return;
+  }
+
+  card.dataset.state = "ready";
+  card.dataset.condition = weather.icon;
+  card.dataset.rough = isRoughWeather(weather) ? "true" : "false";
+  status.hidden = true;
+  status.textContent = "";
+  for (const element of [temp, condition, observed, metrics]) {
+    element.hidden = false;
+  }
+
+  const unit = weather.units.temperature;
+  figure.append(createWeatherIcon(weather.icon, weather.label));
+  temp.textContent = formatTemperature(weather.temperature, unit);
+  condition.textContent = weather.label;
+  const observedAt = formatDate(weather.observedAt);
+  observed.textContent = observedAt ? `Live weather · ${observedAt}` : "Live weather";
+
+  addMetric(
+    metrics,
+    "Feels like",
+    weather.feelsLike === null ? "" : formatTemperature(weather.feelsLike, unit),
+  );
+  addMetric(
+    metrics,
+    "High / low",
+    weather.high === null && weather.low === null
+      ? ""
+      : `${formatTemperature(weather.high, unit)} / ${formatTemperature(
+          weather.low,
+          unit,
+        )}`,
+  );
+  addMetric(
+    metrics,
+    "Wind",
+    weather.windSpeed === null
+      ? ""
+      : `${Math.round(weather.windSpeed)} ${weather.units.wind}`,
+  );
+  addMetric(
+    metrics,
+    "Humidity",
+    weather.humidity === null ? "" : `${Math.round(weather.humidity)}%`,
+  );
+  addMetric(
+    metrics,
+    "Precipitation",
+    weather.precipitation === null
+      ? ""
+      : `${weather.precipitation} ${weather.units.precipitation}`,
+  );
+}
+
 function renderLocation(location) {
   const result = resultFor(location);
   const node = locationTemplate.content.firstElementChild.cloneNode(true);
@@ -406,6 +516,7 @@ function renderLocation(location) {
       ? "Nobody will be alerted for this location yet."
       : `Will alert: ${location.people.map((person) => person.name).join(", ")}.`;
 
+  renderWeather(node, location);
   renderPeople(node, location, result.alerts.length > 0);
   renderAlerts(node, result.alerts);
   locationList.append(node);
@@ -443,6 +554,36 @@ async function loadAlertsFor(location) {
     });
   }
   render();
+}
+
+async function loadWeatherFor(location) {
+  weatherResults.set(location.id, {
+    status: "loading",
+    weather: null,
+    error: null,
+  });
+  try {
+    const weather = await fetchWeather(location);
+    weatherResults.set(location.id, { status: "ready", weather, error: null });
+  } catch (error) {
+    weatherResults.set(location.id, {
+      status: "error",
+      weather: null,
+      error: errorMessage(error),
+    });
+  }
+  render();
+}
+
+function loadAllWeather() {
+  for (const location of locations) {
+    weatherResults.set(location.id, {
+      status: "loading",
+      weather: null,
+      error: null,
+    });
+  }
+  return Promise.all(locations.map(loadWeatherFor));
 }
 
 function loadAllAlerts() {
@@ -483,9 +624,11 @@ clearFiltersButton.addEventListener("click", () => {
 
 refreshButton.addEventListener("click", () => {
   loadAllAlerts();
+  loadAllWeather();
 });
 
 readFiltersFromUrl();
 render();
 syncFiltersToUrl();
 loadAllAlerts();
+loadAllWeather();

@@ -24,6 +24,10 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
   URL (`?country=japan&city=tokyo`) so a filtered view can be shared.
 - Click (or focus and press <kbd>Enter</kbd> on) a marker to highlight that
   location in the list below the map.
+- A **live weather card** for every location: current temperature, a drawn
+  condition icon, what it feels like, today's high and low, wind, humidity and
+  precipitation, refreshed with the alerts. Rough weather (thunderstorms, snow
+  or strong wind) is highlighted on the card.
 - Every alert reported for every location over the last **7 days**, sorted with
   the most severe first and colour coded by severity (Extreme, Severe, Moderate,
   Minor).
@@ -64,6 +68,11 @@ behaviour of the site.
 
 *Home — filtered to a single country; the city filter narrows to that country's
 cities and the filters are kept in the URL.*
+
+![A location card with a live weather panel showing 28°C, a thunderstorm icon, feels like, high and low, wind, humidity and precipitation](docs/images/live-weather-card.png)
+
+*Home — the live weather card shows the current conditions for each location
+above its alerts.*
 
 ![Setup page showing a location with its city, country and coordinates](docs/images/setup-page.png)
 
@@ -107,6 +116,15 @@ The world map outlines come from the
 are in the public domain. They are embedded as a simplified SVG path in
 `assets/js/world-land.js`, so the map needs no map tiles, no API key and no
 network access.
+
+## Live weather
+
+Each location card shows the current conditions from the
+[Open-Meteo forecast API](https://open-meteo.com/en/docs), a free, key-less feed
+that needs no account. The card draws the condition (clear, cloud, fog, rain,
+sleet, snow or thunderstorm, day or night) and lists the temperature, what it
+feels like, today's high and low, wind, humidity and precipitation. If the
+lookup is unavailable the card says so and the alerts are still shown.
 
 ## City search
 
