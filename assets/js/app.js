@@ -52,16 +52,78 @@ function safeUrl(value) {
   }
 }
 
+function activeAlerts(node) {
+  const result = alertResults.get(node);
+  return result ? result.alerts : [];
+}
+
+function safeCount(location) {
+  return location.people.filter((person) => person.safeAt).length;
+}
+
+function renderSafetySummary(node, location) {
+  const summary = node.querySelector("[data-safety-summary]");
+  const alerting = activeAlerts(node).length > 0;
+  const total = location.people.length;
+
+  if (!alerting || total === 0) {
+    summary.hidden = true;
+    summary.textContent = "";
+    return;
+  }
+
+  const safe = safeCount(location);
+  const waiting = total - safe;
+  summary.hidden = false;
+  summary.dataset.allSafe = waiting === 0 ? "true" : "false";
+  summary.textContent =
+    waiting === 0
+      ? `Safety check-in: everyone (${total}) marked safe.`
+      : `Safety check-in: ${safe} of ${total} marked safe · ${waiting} still to confirm.`;
+}
+
 function renderPeople(node, location) {
   const list = node.querySelector("[data-people]");
   const empty = node.querySelector("[data-people-empty]");
   list.textContent = "";
   empty.hidden = location.people.length > 0;
+  const alerting = activeAlerts(node).length > 0;
 
   for (const person of location.people) {
     const item = personTemplate.content.firstElementChild.cloneNode(true);
     item.querySelector("[data-person-name]").textContent = person.name;
     item.querySelector("[data-person-contact]").textContent = person.contact;
+
+    const safety = item.querySelector("[data-person-safety]");
+    const markSafeButton = item.querySelector("[data-mark-safe]");
+    const undoSafeButton = item.querySelector("[data-undo-safe]");
+    const checkedIn = Boolean(person.safeAt);
+
+    item.dataset.safe = checkedIn ? "true" : "false";
+    safety.hidden = !checkedIn;
+    safety.textContent = checkedIn
+      ? `Safe · ${formatDate(person.safeAt) ?? "just now"}`
+      : "";
+
+    markSafeButton.hidden = checkedIn || !alerting;
+    markSafeButton.setAttribute("aria-label", `Mark ${person.name} as safe`);
+    markSafeButton.addEventListener("click", () => {
+      person.safeAt = new Date().toISOString();
+      persist();
+      renderPeople(node, location);
+    });
+
+    undoSafeButton.hidden = !checkedIn;
+    undoSafeButton.setAttribute(
+      "aria-label",
+      `Undo the safe check-in for ${person.name}`,
+    );
+    undoSafeButton.addEventListener("click", () => {
+      person.safeAt = null;
+      persist();
+      renderPeople(node, location);
+    });
+
     item
       .querySelector("[data-remove-person]")
       .addEventListener("click", () => {
@@ -74,28 +136,71 @@ function renderPeople(node, location) {
     list.append(item);
   }
 
+  renderSafetySummary(node, location);
+
   const result = alertResults.get(node);
   if (result) {
-    renderAlertStatus(node, result);
+    renderAlertStatus(node, location, result);
   }
 }
 
-function renderAlertStatus(node, { alerts, errors }) {
+function renderAlertStatus(node, location, { alerts, errors }) {
   const status = node.querySelector("[data-alert-status]");
   const messages = [];
   if (alerts.length === 0) {
     messages.push("No active alerts for this location.");
   } else {
-    const people = node.querySelectorAll("[data-people] [data-person]").length;
+    const people = location.people.length;
     messages.push(
       `${alerts.length} active alert${alerts.length === 1 ? "" : "s"} · ${people} ${people === 1 ? "person" : "people"} to notify.`,
     );
+    if (people > 0) {
+      messages.push(`${safeCount(location)} marked safe.`);
+    }
   }
   messages.push(...errors);
   status.textContent = messages.join(" ");
 }
 
-function renderAlerts(node, result) {
+/**
+ * Clears the safety check-ins when an alert that was not seen before is
+ * triggered, so that people confirm they are safe for the new event.
+ * Returns nothing; the location is updated in place and persisted.
+ */
+function syncSafetyCheckIns(location, { alerts, errors }) {
+  const ids = alerts.map((alert) => alert.id);
+  if (ids.length === 0 && errors.length > 0) {
+    // The feeds could not be read, so the known alerts are left untouched.
+    return;
+  }
+
+  const known = new Set(location.alertIds);
+  const triggered = ids.some((id) => !known.has(id));
+  let changed = false;
+
+  if (triggered) {
+    for (const person of location.people) {
+      if (person.safeAt) {
+        person.safeAt = null;
+        changed = true;
+      }
+    }
+  }
+
+  if (
+    ids.length !== location.alertIds.length ||
+    ids.some((id, index) => id !== location.alertIds[index])
+  ) {
+    location.alertIds = ids;
+    changed = true;
+  }
+
+  if (changed) {
+    persist();
+  }
+}
+
+function renderAlerts(node, location, result) {
   const { alerts } = result;
   const list = node.querySelector("[data-alerts]");
   list.textContent = "";
@@ -127,7 +232,7 @@ function renderAlerts(node, result) {
   }
 
   alertResults.set(node, result);
-  renderAlertStatus(node, result);
+  renderPeople(node, location);
 }
 
 async function loadAlertsFor(node, location) {
@@ -135,7 +240,8 @@ async function loadAlertsFor(node, location) {
   status.textContent = "Loading alerts…";
   try {
     const result = await fetchAlerts(location);
-    renderAlerts(node, result);
+    syncSafetyCheckIns(location, result);
+    renderAlerts(node, location, result);
   } catch (error) {
     let message;
     if (error instanceof Error) {

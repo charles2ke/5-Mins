@@ -128,6 +128,7 @@
             <p class="empty" data-people-empty>
               Nobody will be alerted for this location yet.
             </p>
+            <p class="safety-summary" data-safety-summary hidden></p>
             <form class="person-form" data-person-form novalidate>
               <input
                 type="text"
@@ -161,6 +162,11 @@
       <li class="person" data-person>
         <span data-person-name></span>
         <span class="contact" data-person-contact></span>
+        <span class="safety" data-person-safety hidden></span>
+        <button type="button" class="safe" data-mark-safe hidden>I'm safe</button>
+        <button type="button" class="link" data-undo-safe hidden>
+          Undo safe
+        </button>
         <button type="button" class="link" data-remove-person>Remove</button>
       </li>
     </template>

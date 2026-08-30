@@ -18,6 +18,10 @@ available for those coordinates.
   email address or phone number for each.
 - See every active alert for a location, sorted with the most severe first and
   colour coded by severity (Extreme, Severe, Moderate, Minor).
+- While an alert is active, each person can **mark themselves as safe** for that
+  location. The check-in is timestamped, can be undone, and a summary shows how
+  many people are still to confirm. When a new alert is triggered for the
+  location, the check-ins are cleared so everybody confirms again.
 - Refresh all alerts on demand.
 - Locations and people are stored in the browser's `localStorage`, so they
   survive reloads and never leave your device.

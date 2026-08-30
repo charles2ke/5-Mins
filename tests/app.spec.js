@@ -180,3 +180,129 @@ test("removes a location", async ({ page }) => {
   await expect(page.locator("[data-location]")).toHaveCount(0);
   await expect(page.getByText("No locations yet.")).toBeVisible();
 });
+
+async function addPerson(page, name = "Ada Lovelace", contact = "ada@example.com") {
+  await page.getByLabel("Person name").fill(name);
+  await page.getByLabel("Email or phone").fill(contact);
+  await page.getByRole("button", { name: "Add person" }).click();
+}
+
+test("lets people mark themselves safe while an alert is active", async ({
+  page,
+}, testInfo) => {
+  await addLocation(page);
+  await addPerson(page);
+  await addPerson(page, "Grace Hopper", "+1 555 0100");
+
+  await expect(page.locator("[data-safety-summary]")).toContainText(
+    "Safety check-in: 0 of 2 marked safe · 2 still to confirm.",
+  );
+
+  await page.getByRole("button", { name: "Mark Ada Lovelace as safe" }).click();
+
+  await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(1);
+  await expect(page.locator("[data-person-safety]").first()).toContainText(
+    "Safe ·",
+  );
+  await expect(page.locator("[data-safety-summary]")).toContainText(
+    "Safety check-in: 1 of 2 marked safe · 1 still to confirm.",
+  );
+  await expect(page.locator("[data-alert-status]")).toContainText(
+    "1 marked safe.",
+  );
+
+  await testInfo.attach("marked-safe", {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: "image/png",
+  });
+
+  await page.getByRole("button", { name: "Mark Grace Hopper as safe" }).click();
+  await expect(page.locator("[data-safety-summary]")).toContainText(
+    "Safety check-in: everyone (2) marked safe.",
+  );
+
+  await page
+    .getByRole("button", { name: "Undo the safe check-in for Ada Lovelace" })
+    .click();
+  await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(1);
+  await expect(page.locator("[data-safety-summary]")).toContainText(
+    "1 of 2 marked safe",
+  );
+});
+
+test("keeps a safe check-in after a reload", async ({ page }) => {
+  await addLocation(page);
+  await addPerson(page);
+  await page.getByRole("button", { name: "Mark Ada Lovelace as safe" }).click();
+
+  await page.reload();
+
+  await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(1);
+  await expect(page.locator("[data-safety-summary]")).toContainText(
+    "everyone (1) marked safe",
+  );
+});
+
+test("does not offer a safety check-in without an active alert", async ({
+  page,
+}) => {
+  await page.route("https://api.weather.gov/**", (route) =>
+    route.fulfill({ json: { features: [] } }),
+  );
+  await page.route("https://earthquake.usgs.gov/**", (route) =>
+    route.fulfill({ json: { features: [] } }),
+  );
+  await addLocation(page);
+  await addPerson(page);
+
+  await expect(page.locator("[data-alert-status]")).toContainText(
+    "No active alerts for this location.",
+  );
+  await expect(
+    page.getByRole("button", { name: "Mark Ada Lovelace as safe" }),
+  ).toBeHidden();
+  await expect(page.locator("[data-safety-summary]")).toBeHidden();
+});
+
+test("asks everyone to check in again when a new alert is triggered", async ({
+  page,
+}) => {
+  await addLocation(page);
+  await addPerson(page);
+  await page.getByRole("button", { name: "Mark Ada Lovelace as safe" }).click();
+  await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(1);
+
+  await page.getByRole("button", { name: "Refresh alerts" }).click();
+  await expect(page.locator("[data-alert-status]")).toContainText(
+    "1 marked safe.",
+  );
+
+  await page.route("https://api.weather.gov/**", (route) =>
+    route.fulfill({
+      json: {
+        features: [
+          {
+            properties: {
+              id: "https://api.weather.gov/alerts/urn:oid:test.3",
+              event: "Tornado Warning",
+              severity: "Extreme",
+              headline: "Tornado Warning issued for Miami-Dade",
+              areaDesc: "Miami-Dade, FL",
+              effective: "2026-08-30T01:00:00Z",
+              expires: "2026-08-30T03:00:00Z",
+            },
+          },
+        ],
+      },
+    }),
+  );
+  await page.getByRole("button", { name: "Refresh alerts" }).click();
+
+  await expect(page.locator("[data-alert]").first()).toContainText(
+    "Tornado Warning",
+  );
+  await expect(page.locator('[data-person][data-safe="true"]')).toHaveCount(0);
+  await expect(page.locator("[data-safety-summary]")).toContainText(
+    "0 of 1 marked safe",
+  );
+});
