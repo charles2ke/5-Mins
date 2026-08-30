@@ -642,7 +642,8 @@ test("lets people mark themselves safe while an alert is active", async ({
   );
 });
 
-test("keeps a safe check-in after a reload", async ({ page }) => {  await addLocation(page);
+test("keeps a safe check-in after a reload", async ({ page }) => {
+  await addLocation(page);
   await addPerson(page);
   await page.getByRole("button", { name: "I'm safe: Ada Lovelace" }).click();
 
