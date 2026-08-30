@@ -16,6 +16,8 @@ function isFiniteNumber(value) {
  */
 export function normaliseLocation(input) {
   const name = String(input.name ?? "").trim();
+  const city = String(input.city ?? "").trim();
+  const country = String(input.country ?? "").trim();
   const lat = Number(input.lat);
   const lon = Number(input.lon);
 
@@ -32,6 +34,8 @@ export function normaliseLocation(input) {
   return {
     id: input.id || createId(),
     name,
+    city,
+    country,
     lat,
     lon,
     people: Array.isArray(input.people)
