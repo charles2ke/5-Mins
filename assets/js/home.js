@@ -36,7 +36,8 @@ const locations = loadLocations();
 const results = new Map();
 /** Live weather per location id: `{ status, weather, error }`. */
 const weatherResults = new Map();
-const filters = { country: "", city: "", severity: "" };
+/** `severity` holds every selected severity key; empty means "all of them". */
+const filters = { country: "", city: "", severity: [] };
 /** Labels for filters that came from the URL and match no location. */
 const filterLabels = { country: "", city: "" };
 /** Ids of the cards the reader has folded away. */
@@ -108,9 +109,12 @@ function localAlerts(location) {
   return resultFor(location).alerts.filter((alert) => !isWorldwideAlert(alert));
 }
 
-/** True while the selected severity filter, if any, keeps this alert. */
+/** True while the selected severity filters, if any, keep this alert. */
 function matchesSeverity(alert) {
-  return !filters.severity || placeKey(alert.severity) === filters.severity;
+  return (
+    filters.severity.length === 0 ||
+    filters.severity.includes(placeKey(alert.severity))
+  );
 }
 
 function filterAlerts(alerts) {
@@ -139,7 +143,7 @@ function placeMatches() {
 function visibleLocations() {
   return placeMatches().filter((location) => {
     // A location still loading is kept so the list does not flash empty.
-    if (!filters.severity || resultFor(location).status === "loading") {
+    if (filters.severity.length === 0 || resultFor(location).status === "loading") {
       return true;
     }
     return filterAlerts(localAlerts(location)).length > 0;
@@ -215,6 +219,35 @@ function fillSelect(select, options, selectedKey, allLabel) {
   }
 }
 
+/**
+ * Fills a multiple-choice filter with `options` and ticks `selectedKeys`.
+ *
+ * A multi-select has no "all" entry: selecting nothing already means "all".
+ */
+function fillMultiSelect(select, options, selectedKeys) {
+  const signature = JSON.stringify(
+    options.map((option) => [option.key, option.label]),
+  );
+
+  if (select.dataset.options !== signature) {
+    select.textContent = "";
+    for (const option of options) {
+      const node = document.createElement("option");
+      node.value = option.key;
+      node.textContent = option.label;
+      select.append(node);
+    }
+    select.dataset.options = signature;
+  }
+
+  for (const node of select.options) {
+    const selected = selectedKeys.includes(node.value);
+    if (node.selected !== selected) {
+      node.selected = selected;
+    }
+  }
+}
+
 /** The severities a reader can filter on, newest feeds included. */
 function severityOptions() {
   return SEVERITY_ORDER.map((severity) => ({
@@ -250,23 +283,28 @@ function renderFilters() {
 
   fillSelect(countryFilter, countries, filters.country, "All countries");
   fillSelect(cityFilter, cities, filters.city, "All cities");
-  fillSelect(severityFilter, severityOptions(), filters.severity, "All severities");
+  fillMultiSelect(severityFilter, severityOptions(), filters.severity);
 
   countryFilter.disabled = countries.length === 0;
   cityFilter.disabled = cities.length === 0;
   severityFilter.disabled = locations.length === 0;
-  clearFiltersButton.disabled = Object.values(filters).every((value) => !value);
+  clearFiltersButton.disabled = !hasFilters();
   // Without a city or country on any location the place filters stay empty,
   // which otherwise looks like a broken control.
   filterHint.hidden =
     locations.length === 0 || countries.length > 0 || cities.length > 0;
 }
 
+function hasFilters() {
+  return Boolean(filters.country || filters.city || filters.severity.length);
+}
+
 function syncFiltersToUrl() {
   const params = new URLSearchParams(window.location.search);
   for (const [key, value] of Object.entries(filters)) {
-    if (value) {
-      params.set(key, value);
+    const query = Array.isArray(value) ? value.join(",") : value;
+    if (query) {
+      params.set(key, query);
     } else {
       params.delete(key);
     }
@@ -286,10 +324,14 @@ function readFiltersFromUrl() {
     filters[field] = placeKey(raw);
     filterLabels[field] = raw;
   }
-  const severity = placeKey(params.get("severity") ?? "");
-  filters.severity = severityOptions().some((option) => option.key === severity)
-    ? severity
-    : "";
+  const known = severityOptions().map((option) => option.key);
+  const wanted = String(params.get("severity") ?? "")
+    .split(",")
+    .map((value) => placeKey(value))
+    .filter((value) => known.includes(value));
+  // Ordered and de-duplicated so `?severity=severe,extreme` and
+  // `?severity=extreme,severe` are the same filter.
+  filters.severity = known.filter((key) => wanted.includes(key));
 }
 
 /* -------------------------------------------------------------------- map */
@@ -769,7 +811,12 @@ cityFilter.addEventListener("change", () => {
 });
 
 severityFilter.addEventListener("change", () => {
-  filters.severity = severityFilter.value;
+  const chosen = new Set(
+    [...severityFilter.selectedOptions].map((option) => option.value),
+  );
+  filters.severity = severityOptions()
+    .map((option) => option.key)
+    .filter((key) => chosen.has(key));
   syncFiltersToUrl();
   render();
 });
@@ -777,7 +824,7 @@ severityFilter.addEventListener("change", () => {
 clearFiltersButton.addEventListener("click", () => {
   filters.country = "";
   filters.city = "";
-  filters.severity = "";
+  filters.severity = [];
   filterLabels.country = "";
   filterLabels.city = "";
   syncFiltersToUrl();

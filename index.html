@@ -90,9 +90,15 @@
           </div>
           <div class="field">
             <label for="filter-severity">Filter by severity</label>
-            <select id="filter-severity">
-              <option value="">All severities</option>
-            </select>
+            <select
+              id="filter-severity"
+              multiple
+              size="5"
+              aria-describedby="severity-hint"
+            ></select>
+            <p id="severity-hint" class="note">
+              Pick one or more severities; none selected shows them all.
+            </p>
           </div>
           <div class="actions">
             <button type="button" id="clear-filters">Clear filters</button>

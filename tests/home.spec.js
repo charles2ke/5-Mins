@@ -525,7 +525,7 @@ test("filters by severity", async ({ page }, testInfo) => {
   await page.goto("/");
   await expect(page.locator("[data-alert]")).toHaveCount(8);
 
-  await page.getByLabel("Filter by severity").selectOption({ label: "Extreme" });
+  await page.getByLabel("Filter by severity").selectOption(["extreme"]);
 
   await expect(page).toHaveURL(/severity=extreme/);
   await expect(locationCards(page)).toHaveCount(2);
@@ -539,7 +539,7 @@ test("filters by severity", async ({ page }, testInfo) => {
     contentType: "image/png",
   });
 
-  await page.getByLabel("Filter by severity").selectOption({ label: "Minor" });
+  await page.getByLabel("Filter by severity").selectOption(["minor"]);
 
   // Only Tokyo has no minor alert, so its card and marker drop out.
   await expect(locationCards(page)).toHaveCount(0);
@@ -549,13 +549,58 @@ test("filters by severity", async ({ page }, testInfo) => {
   await expect(page.locator("[data-alert]")).toHaveCount(8);
 });
 
+test("filters by several severities at once", async ({ page }, testInfo) => {
+  await seed(page, [miami, tokyo]);
+  await page.goto("/");
+  await expect(page.locator("[data-alert]")).toHaveCount(8);
+
+  await page
+    .getByLabel("Filter by severity")
+    .selectOption(["extreme", "moderate"]);
+
+  await expect(page).toHaveURL(/severity=extreme%2Cmoderate/);
+  await expect(page.locator('[data-alert][data-severity="Extreme"]')).toHaveCount(2);
+  await expect(page.locator('[data-alert][data-severity="Moderate"]')).toHaveCount(1);
+  await expect(
+    page.locator(
+      '[data-alert]:not([data-severity="Extreme"]):not([data-severity="Moderate"])',
+    ),
+  ).toHaveCount(0);
+
+  await testInfo.attach("home-filtered-by-severities", {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: "image/png",
+  });
+
+  await page.getByRole("button", { name: "Clear filters" }).click();
+  await expect(page.getByLabel("Filter by severity")).toHaveValues([]);
+  await expect(page.locator("[data-alert]")).toHaveCount(8);
+});
+
 test("restores the severity filter from the url", async ({ page }) => {
   await seed(page, [miami]);
   await page.goto("/?severity=moderate");
 
-  await expect(page.getByLabel("Filter by severity")).toHaveValue("moderate");
+  await expect(page.getByLabel("Filter by severity")).toHaveValues(["moderate"]);
   await expect(page.locator("[data-alert]")).toHaveCount(1);
   await expect(page.locator("[data-alert]")).toContainText("Flood Watch");
+});
+
+test("restores several severities from the url", async ({ page }) => {
+  await seed(page, [miami]);
+  await page.goto("/?severity=extreme,moderate");
+
+  await expect(page.getByLabel("Filter by severity")).toHaveValues([
+    "extreme",
+    "moderate",
+  ]);
+  await expect(page.locator('[data-alert][data-severity="Extreme"]')).toHaveCount(1);
+  await expect(page.locator('[data-alert][data-severity="Moderate"]')).toHaveCount(1);
+  await expect(
+    page.locator(
+      '[data-alert]:not([data-severity="Extreme"]):not([data-severity="Moderate"])',
+    ),
+  ).toHaveCount(0);
 });
 
 test("explains empty place filters", async ({ page }) => {

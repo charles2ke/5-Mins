@@ -236,8 +236,15 @@ main,
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
   gap: 1rem;
-  align-items: end;
+  /* The severity filter is a multi-select, so the fields have unequal heights
+     and line up along their labels instead of their bottom edge. */
+  align-items: start;
   margin-top: 1rem;
+}
+
+.filters .actions {
+  /* Keeps the button on the baseline of the single-line selects. */
+  margin-top: 1.6rem;
 }
 
 .field {
@@ -261,6 +268,19 @@ select {
   color: var(--text);
   font-size: 1rem;
   min-width: 0;
+}
+
+select[multiple] {
+  padding: 0.25rem;
+}
+
+select[multiple] option {
+  padding: 0.3rem 0.45rem;
+  border-radius: 0.35rem;
+}
+
+.field .note {
+  margin: 0;
 }
 
 select:disabled {
