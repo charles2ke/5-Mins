@@ -147,7 +147,7 @@ main,
 /* The navigation stays within reach while the alert list scrolls. */
 .site-header {
   position: sticky;
-  top: 0;
+  top: env(safe-area-inset-top);
   z-index: 20;
   margin: 0 -1rem;
   padding: 0 1rem;
