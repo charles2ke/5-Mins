@@ -137,45 +137,102 @@ body {
 }
 
 main,
-.site-header,
+.site-bar,
+.tagline,
 .site-footer {
   max-width: 60rem;
   margin: 0 auto;
 }
 
+/* The navigation stays within reach while the alert list scrolls. */
 .site-header {
-  padding: 2.5rem 0 1.5rem;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin: 0 -1rem;
+  padding: env(safe-area-inset-top, 0px) 1rem 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
 }
 
-.brand {
-  max-width: 34rem;
+@supports (backdrop-filter: blur(10px)) {
+  .site-header {
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(10px);
+  }
 }
 
-.header-actions {
+.site-bar {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  flex-wrap: wrap;
-  padding-top: 0.5rem;
+  padding: 0.6rem 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  /* The nav takes the space it needs before the brand gives any up. */
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.brand-logo {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
 }
 
 .site-header h1 {
   margin: 0;
-  font-size: 2.5rem;
+  font-size: 1.35rem;
   letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
+/* A segmented control: one rounded track holding the four page pills. */
 .site-nav {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.15rem;
+  margin-left: auto;
+  padding: 0.25rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel-alt);
+  /* Narrow screens scroll the pills sideways instead of wrapping them. */
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
-.site-nav a,
+.site-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.site-nav a {
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease-in-out,
+    color 0.15s ease-in-out;
+}
+
+.site-nav a:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.site-nav a.current {
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
 .button-link {
   padding: 0.5rem 0.9rem;
   border-radius: 0.5rem;
@@ -186,16 +243,18 @@ main,
   font-size: 0.95rem;
 }
 
-.site-nav a:hover,
 .button-link:hover {
   border-color: var(--accent);
 }
 
-.site-nav a.current {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-text);
-  font-weight: 600;
+@media (prefers-reduced-motion: reduce) {
+  .site-nav a {
+    transition: none;
+  }
+}
+
+.tagline {
+  margin: 1.5rem auto 1.25rem;
 }
 
 .tagline,
@@ -211,6 +270,8 @@ main,
   border-radius: 0.75rem;
   padding: 1.25rem;
   margin-bottom: 1.5rem;
+  /* Keeps scrolled-to content clear of the sticky navigation bar. */
+  scroll-margin-top: 4.5rem;
 }
 
 .panel h2 {
@@ -328,14 +389,20 @@ button.link {
   padding: 0 0.25rem;
 }
 
-.theme-toggle {
+.switch {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  flex: none;
   white-space: nowrap;
+  border-radius: 999px;
 }
 
-.theme-toggle-track {
+.field .switch {
+  align-self: start;
+}
+
+.switch-track {
   position: relative;
   flex: none;
   width: 2.25rem;
@@ -345,7 +412,7 @@ button.link {
   transition: background-color 0.15s ease-in-out;
 }
 
-.theme-toggle-thumb {
+.switch-thumb {
   position: absolute;
   top: 50%;
   left: 0.2rem;
@@ -357,17 +424,17 @@ button.link {
   transition: transform 0.15s ease-in-out;
 }
 
-.theme-toggle[aria-checked="true"] .theme-toggle-track {
+.switch[aria-checked="true"] .switch-track {
   background: var(--accent);
 }
 
-.theme-toggle[aria-checked="true"] .theme-toggle-thumb {
+.switch[aria-checked="true"] .switch-thumb {
   transform: translate(1rem, -50%);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .theme-toggle-track,
-  .theme-toggle-thumb {
+  .switch-track,
+  .switch-thumb {
     transition: none;
   }
 }
@@ -451,6 +518,7 @@ button.link {
   padding: 1rem;
   margin-top: 1rem;
   background: var(--panel-alt);
+  scroll-margin-top: 4.5rem;
 }
 
 .location[data-selected] {
@@ -968,13 +1036,32 @@ button.safe:hover {
   }
 }
 
+/* Narrow screens: the toggle keeps its switch, and its label its screen
+   reader name, but the text no longer competes with the nav for space. */
+@media (max-width: 48rem) {
+  .theme-toggle-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    clip-path: inset(50%);
+  }
+}
+
 @media (max-width: 30rem) {
-  .site-header {
-    padding: 1.5rem 0 1rem;
+  .site-bar {
+    padding: 0.5rem 0;
   }
 
   .site-header h1 {
-    font-size: 2rem;
+    font-size: 1.15rem;
+  }
+
+  .site-nav a {
+    padding: 0.4rem 0.65rem;
   }
 
   .panel,

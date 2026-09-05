@@ -40,7 +40,9 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
   Minor).
 - Alerts that reach the whole planet, such as the NOAA space weather alerts, are
   listed once under a **Worldwide** card instead of on every location, and that
-  card carries no local weather.
+  card carries no local weather. A **Show worldwide alerts** switch hides that
+  card when you only care about your own locations; the choice is kept in the
+  URL as `?worldwide=0`.
 - Refresh all alerts on demand.
 - While an alert is active, each person can mark themselves safe. A new alert
   clears those check-ins so everyone confirms again.
@@ -58,6 +60,8 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
 
 ### Everywhere
 
+- A sticky navigation bar keeps the four pages one tap away while the alert list
+  scrolls; the links sit in a pill bar that scrolls sideways on small screens.
 - Dark and light themes: the site follows the system colour scheme, and the
   header toggle pins a theme that is remembered on the next visit.
 - Locations and people are stored in the browser's `localStorage`, so they
@@ -84,6 +88,11 @@ cities and the filters are kept in the URL.*
 
 *Home — alerts that reach the whole planet are listed once under Worldwide, with
 no local weather card.*
+
+![Home page with the Show worldwide alerts switch off and no Worldwide card](docs/images/home-worldwide-hidden.png)
+
+*Home — the Show worldwide alerts switch hides the Worldwide card and says so in
+the map summary.*
 
 ![Home page filtered to Extreme alerts, showing only the extreme alerts of each location](docs/images/home-filtered-by-severity.png)
 

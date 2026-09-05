@@ -39,14 +39,17 @@
   </head>
   <body>
     <header class="site-header">
-      <div class="brand">
-        <h1>5-Mins</h1>
-        <p class="tagline">
-          Set up the locations you care about and the people who must know when
-          a disaster is heading their way.
-        </p>
-      </div>
-      <div class="header-actions">
+      <div class="site-bar">
+        <div class="brand">
+          <img
+            class="brand-logo"
+            src="assets/icons/icon.svg"
+            alt=""
+            width="32"
+            height="32"
+          />
+          <h1>5-Mins</h1>
+        </div>
         <nav class="site-nav" aria-label="Main">
           <a href="./">Home</a>
           <a href="setup.html" class="current" aria-current="page">Setup</a>
@@ -56,17 +59,22 @@
         <button
           type="button"
           id="theme-toggle"
-          class="theme-toggle"
+          class="switch theme-toggle"
           role="switch"
           aria-checked="false"
         >
-          <span class="theme-toggle-track" aria-hidden="true"
-            ><span class="theme-toggle-thumb"></span
+          <span class="switch-track" aria-hidden="true"
+            ><span class="switch-thumb"></span
           ></span>
-          Dark mode
+          <span class="theme-toggle-label">Dark mode</span>
         </button>
       </div>
     </header>
+
+    <p class="tagline">
+      Set up the locations you care about and the people who must know when
+      a disaster is heading their way.
+    </p>
 
     <main>
       <section class="panel" aria-labelledby="add-location-heading">

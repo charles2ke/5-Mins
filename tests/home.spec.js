@@ -487,6 +487,54 @@ test("lists worldwide alerts once, without a weather card", async ({
   });
 });
 
+test("hides and shows the worldwide alerts with the toggle", async ({
+  page,
+}, testInfo) => {
+  await seed(page, [miami, tokyo]);
+  await page.goto("/");
+
+  const worldwide = page.locator("[data-location][data-worldwide]");
+  await expect(worldwide).toHaveCount(1);
+
+  const toggle = page.getByRole("switch", { name: "Show worldwide alerts" });
+  await expect(toggle).toHaveAttribute("aria-checked", "true");
+
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-checked", "false");
+  await expect(worldwide).toHaveCount(0);
+  // The locations keep their own alerts.
+  await expect(locationCards(page)).toHaveCount(2);
+  await expect(page.locator("#map-summary")).toContainText(
+    "Worldwide alerts are hidden.",
+  );
+  await expect(page).toHaveURL(/worldwide=0/);
+
+  await testInfo.attach("home-worldwide-hidden", {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: "image/png",
+  });
+
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-checked", "true");
+  await expect(worldwide).toHaveCount(1);
+  await expect(page).not.toHaveURL(/worldwide=/);
+});
+
+test("hides the worldwide alerts from a shared link and clears the filter", async ({
+  page,
+}) => {
+  await seed(page, [miami, tokyo]);
+  await page.goto("/?worldwide=0");
+
+  const toggle = page.getByRole("switch", { name: "Show worldwide alerts" });
+  await expect(toggle).toHaveAttribute("aria-checked", "false");
+  await expect(page.locator("[data-location][data-worldwide]")).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Clear filters" }).click();
+  await expect(toggle).toHaveAttribute("aria-checked", "true");
+  await expect(page.locator("[data-location][data-worldwide]")).toHaveCount(1);
+});
+
 test("folds a location card away and remembers it", async ({
   page,
 }, testInfo) => {
