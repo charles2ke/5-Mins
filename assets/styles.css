@@ -148,10 +148,9 @@ main,
 .site-header {
   position: sticky;
   top: 0;
-  top: env(safe-area-inset-top, 0px);
   z-index: 20;
   margin: 0 -1rem;
-  padding: 0 1rem;
+  padding: env(safe-area-inset-top, 0px) 1rem 0;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
 }
