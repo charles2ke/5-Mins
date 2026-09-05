@@ -17,6 +17,7 @@ import {
 
 const refreshButton = document.querySelector("#refresh-alerts");
 const clearFiltersButton = document.querySelector("#clear-filters");
+const worldwideToggle = document.querySelector("#toggle-worldwide");
 const countryFilter = document.querySelector("#filter-country");
 const cityFilter = document.querySelector("#filter-city");
 const severityFilter = document.querySelector("#filter-severity");
@@ -36,8 +37,12 @@ const locations = loadLocations();
 const results = new Map();
 /** Live weather per location id: `{ status, weather, error }`. */
 const weatherResults = new Map();
-/** `severity` holds every selected severity key; empty means "all of them". */
-const filters = { country: "", city: "", severity: [] };
+/**
+ * `severity` holds every selected severity key; empty means "all of them".
+ * `worldwide` is false while the reader hides the alerts that reach every
+ * location.
+ */
+const filters = { country: "", city: "", severity: [], worldwide: true };
 /** Labels for filters that came from the URL and match no location. */
 const filterLabels = { country: "", city: "" };
 /** Ids of the cards the reader has folded away. */
@@ -123,6 +128,7 @@ function filterAlerts(alerts) {
 
 /** Every worldwide alert reported for `shown`, each listed only once. */
 function worldwideAlerts(shown) {
+  if (!filters.worldwide) return [];
   const seen = new Set();
   const alerts = [];
   for (const location of shown) {
@@ -284,10 +290,12 @@ function renderFilters() {
   fillSelect(countryFilter, countries, filters.country, "All countries");
   fillSelect(cityFilter, cities, filters.city, "All cities");
   fillMultiSelect(severityFilter, severityOptions(), filters.severity);
+  worldwideToggle.setAttribute("aria-checked", String(filters.worldwide));
 
   countryFilter.disabled = countries.length === 0;
   cityFilter.disabled = cities.length === 0;
   severityFilter.disabled = locations.length === 0;
+  worldwideToggle.disabled = locations.length === 0;
   clearFiltersButton.disabled = !hasFilters();
   // Without a city or country on any location the place filters stay empty,
   // which otherwise looks like a broken control.
@@ -296,18 +304,33 @@ function renderFilters() {
 }
 
 function hasFilters() {
-  return Boolean(filters.country || filters.city || filters.severity.length);
+  return Boolean(
+    filters.country ||
+      filters.city ||
+      filters.severity.length ||
+      !filters.worldwide,
+  );
 }
 
 function syncFiltersToUrl() {
   const params = new URLSearchParams(window.location.search);
-  for (const [key, value] of Object.entries(filters)) {
-    const query = Array.isArray(value) ? value.join(",") : value;
-    if (query) {
-      params.set(key, query);
+  for (const field of ["country", "city"]) {
+    if (filters[field]) {
+      params.set(field, filters[field]);
     } else {
-      params.delete(key);
+      params.delete(field);
     }
+  }
+  if (filters.severity.length > 0) {
+    params.set("severity", filters.severity.join(","));
+  } else {
+    params.delete("severity");
+  }
+  // Only the non-default choice is worth carrying in a shared link.
+  if (filters.worldwide) {
+    params.delete("worldwide");
+  } else {
+    params.set("worldwide", "0");
   }
   const query = params.toString();
   window.history.replaceState(
@@ -332,6 +355,9 @@ function readFiltersFromUrl() {
   // Ordered and de-duplicated so `?severity=severe,extreme` and
   // `?severity=extreme,severe` are the same filter.
   filters.severity = known.filter((key) => wanted.includes(key));
+  filters.worldwide = !["0", "false", "no", "off", "hidden"].includes(
+    String(params.get("worldwide") ?? "").trim().toLowerCase(),
+  );
 }
 
 /* -------------------------------------------------------------------- map */
@@ -401,6 +427,9 @@ function renderSummary(shown, worldwide) {
         "alerts",
       )} affecting everywhere.`,
     );
+  }
+  if (!filters.worldwide) {
+    parts.push("Worldwide alerts are hidden.");
   }
   if (loading > 0) {
     parts.push(`Loading ${loading} more…`);
@@ -821,10 +850,17 @@ severityFilter.addEventListener("change", () => {
   render();
 });
 
+worldwideToggle.addEventListener("click", () => {
+  filters.worldwide = !filters.worldwide;
+  syncFiltersToUrl();
+  render();
+});
+
 clearFiltersButton.addEventListener("click", () => {
   filters.country = "";
   filters.city = "";
   filters.severity = [];
+  filters.worldwide = true;
   filterLabels.country = "";
   filterLabels.city = "";
   syncFiltersToUrl();

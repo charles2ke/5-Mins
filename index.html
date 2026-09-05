@@ -39,14 +39,17 @@
   </head>
   <body>
     <header class="site-header">
-      <div class="brand">
-        <h1>5-Mins</h1>
-        <p class="tagline">
-          Every disaster alert from the last 7 days across the places you
-          watch, on one world map.
-        </p>
-      </div>
-      <div class="header-actions">
+      <div class="site-bar">
+        <div class="brand">
+          <img
+            class="brand-logo"
+            src="assets/icons/icon.svg"
+            alt=""
+            width="32"
+            height="32"
+          />
+          <h1>5-Mins</h1>
+        </div>
         <nav class="site-nav" aria-label="Main">
           <a href="./" class="current" aria-current="page">Home</a>
           <a href="setup.html">Setup</a>
@@ -56,17 +59,22 @@
         <button
           type="button"
           id="theme-toggle"
-          class="theme-toggle"
+          class="switch theme-toggle"
           role="switch"
           aria-checked="false"
         >
-          <span class="theme-toggle-track" aria-hidden="true"
-            ><span class="theme-toggle-thumb"></span
+          <span class="switch-track" aria-hidden="true"
+            ><span class="switch-thumb"></span
           ></span>
-          Dark mode
+          <span class="theme-toggle-label">Dark mode</span>
         </button>
       </div>
     </header>
+
+    <p class="tagline">
+      Every disaster alert from the last 7 days across the places you
+      watch, on one world map.
+    </p>
 
     <main>
       <section class="panel" aria-labelledby="map-heading">
@@ -98,6 +106,25 @@
             ></select>
             <p id="severity-hint" class="note">
               Pick one or more severities; none selected shows them all.
+            </p>
+          </div>
+          <div class="field">
+            <span class="field-label" id="worldwide-label">Worldwide alerts</span>
+            <button
+              type="button"
+              id="toggle-worldwide"
+              class="switch"
+              role="switch"
+              aria-checked="true"
+              aria-describedby="worldwide-hint"
+            >
+              <span class="switch-track" aria-hidden="true"
+                ><span class="switch-thumb"></span
+              ></span>
+              Show worldwide alerts
+            </button>
+            <p id="worldwide-hint" class="note">
+              Alerts that reach every location, listed once.
             </p>
           </div>
           <div class="actions">

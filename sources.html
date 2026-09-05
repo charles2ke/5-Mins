@@ -39,14 +39,17 @@
   </head>
   <body>
     <header class="site-header">
-      <div class="brand">
-        <h1>5-Mins</h1>
-        <p class="tagline">
-          The free public feeds behind every alert on the map, and what
-          happens to the data you enter.
-        </p>
-      </div>
-      <div class="header-actions">
+      <div class="site-bar">
+        <div class="brand">
+          <img
+            class="brand-logo"
+            src="assets/icons/icon.svg"
+            alt=""
+            width="32"
+            height="32"
+          />
+          <h1>5-Mins</h1>
+        </div>
         <nav class="site-nav" aria-label="Main">
           <a href="./">Home</a>
           <a href="setup.html">Setup</a>
@@ -56,17 +59,22 @@
         <button
           type="button"
           id="theme-toggle"
-          class="theme-toggle"
+          class="switch theme-toggle"
           role="switch"
           aria-checked="false"
         >
-          <span class="theme-toggle-track" aria-hidden="true"
-            ><span class="theme-toggle-thumb"></span
+          <span class="switch-track" aria-hidden="true"
+            ><span class="switch-thumb"></span
           ></span>
-          Dark mode
+          <span class="theme-toggle-label">Dark mode</span>
         </button>
       </div>
     </header>
+
+    <p class="tagline">
+      The free public feeds behind every alert on the map, and what
+      happens to the data you enter.
+    </p>
 
     <main>
       <section class="panel" aria-labelledby="sources-heading">
