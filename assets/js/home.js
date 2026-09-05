@@ -355,9 +355,8 @@ function readFiltersFromUrl() {
   // Ordered and de-duplicated so `?severity=severe,extreme` and
   // `?severity=extreme,severe` are the same filter.
   filters.severity = known.filter((key) => wanted.includes(key));
-  filters.worldwide = !["0", "false", "no", "off", "hidden"].includes(
-    String(params.get("worldwide") ?? "").trim().toLowerCase(),
-  );
+  // Only `worldwide=0` hides them: that is the value syncFiltersToUrl writes.
+  filters.worldwide = String(params.get("worldwide") ?? "").trim() !== "0";
 }
 
 /* -------------------------------------------------------------------- map */
