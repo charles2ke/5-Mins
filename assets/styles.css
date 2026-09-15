@@ -760,6 +760,44 @@ button.safe {
   font-size: 0.85rem;
 }
 
+.warn-links[hidden],
+.warn-actions[hidden] {
+  display: none;
+}
+
+.warn-links {
+  display: inline-flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.warn-link {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.warn-link:hover,
+.warn-link:focus-visible {
+  border-color: var(--accent, currentColor);
+  text-decoration: underline;
+}
+
+.warn-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.warn-status {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
 button.safe:hover {
   background: var(--safe);
   color: var(--safe-text);

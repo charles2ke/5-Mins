@@ -892,3 +892,130 @@ test("refreshes the live weather on demand", async ({ page }) => {
   await expect(page.locator("[data-weather-temp]")).toHaveText("4°C");
   await expect(page.locator("[data-weather-condition]")).toHaveText("Light snow");
 });
+
+test("hands each person a warning link for the app that fits their contact", async ({
+  page,
+}, testInfo) => {
+  await seed(page, [
+    {
+      ...miami,
+      people: [
+        { id: "ada", name: "Ada Lovelace", contact: "ada@example.com" },
+        { id: "alan", name: "Alan Turing", contact: "+1 (305) 555 0134" },
+      ],
+    },
+  ]);
+  await page.goto("/");
+  await expect(page.locator("[data-alert]")).toHaveCount(6);
+
+  const ada = page.locator("[data-person]").first();
+  const alan = page.locator("[data-person]").nth(1);
+
+  // An email address is warned by email, a phone number by SMS or WhatsApp.
+  await expect(ada.getByRole("link", { name: "Email a warning to Ada Lovelace" })).toBeVisible();
+  await expect(ada.locator("[data-warn-sms]")).toHaveCount(0);
+  await expect(alan.getByRole("link", { name: "Text a warning to Alan Turing" })).toBeVisible();
+  await expect(
+    alan.getByRole("link", { name: "Send Alan Turing a warning on WhatsApp" }),
+  ).toBeVisible();
+  await expect(alan.locator("[data-warn-email]")).toHaveCount(0);
+
+  const mailto = await ada.locator("[data-warn-email]").getAttribute("href");
+  expect(mailto.startsWith("mailto:ada")).toBe(true);
+  const mail = new URLSearchParams(mailto.slice(mailto.indexOf("?") + 1));
+  expect(mail.get("subject")).toBe(
+    "5-Mins alert: Extreme — Hurricane Warning at Miami home (Miami, United States)",
+  );
+  expect(mail.get("body")).toContain("Hurricane Warning issued for Miami-Dade");
+  expect(mail.get("body")).toContain("Please reply to confirm you are safe.");
+
+  const sms = await alan.locator("[data-warn-sms]").getAttribute("href");
+  expect(sms.startsWith("sms:+13055550134?&body=")).toBe(true);
+  const whatsapp = await alan.locator("[data-warn-whatsapp]").getAttribute("href");
+  expect(whatsapp.startsWith("https://wa.me/13055550134?text=")).toBe(true);
+
+  await testInfo.attach("warn-people-links", {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: "image/png",
+  });
+});
+
+test("shares the warning with the system share sheet", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.__shared = [];
+    Object.defineProperty(navigator, "share", {
+      configurable: true,
+      value: (data) => {
+        window.__shared.push(data);
+        return Promise.resolve();
+      },
+    });
+  });
+  await seed(page, [miami]);
+  await page.goto("/");
+  await expect(page.locator("[data-alert]")).toHaveCount(6);
+
+  await page.getByRole("button", { name: "Share warning" }).click();
+  await expect(page.locator("[data-warn-status]")).toHaveText("Warning shared.");
+
+  const shared = await page.evaluate(() => window.__shared);
+  expect(shared).toHaveLength(1);
+  expect(shared[0].title).toContain("Hurricane Warning at Miami home");
+  expect(shared[0].text).toContain("https://www.openstreetmap.org/?mlat=25.7617");
+});
+
+test("copies the warning when the browser cannot share", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.__copied = [];
+    // No Web Share API in this browser, so the button falls back to copying.
+    Object.defineProperty(navigator, "share", { configurable: true, value: undefined });
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        writeText: (text) => {
+          window.__copied.push(text);
+          return Promise.resolve();
+        },
+      },
+    });
+  });
+  await seed(page, [miami]);
+  await page.goto("/");
+  await expect(page.locator("[data-alert]")).toHaveCount(6);
+
+  await page.getByRole("button", { name: "Share warning" }).click();
+  await expect(page.locator("[data-warn-status]")).toHaveText(
+    "Warning copied to the clipboard.",
+  );
+  expect(await page.evaluate(() => window.__copied[0])).toContain(
+    "Please reply to confirm you are safe.",
+  );
+});
+
+test("offers no warning when a location has no recent alerts", async ({
+  page,
+}) => {
+  await page.route("https://api.weather.gov/**", (route) =>
+    route.fulfill({ json: { features: [] } }),
+  );
+  await page.route("https://earthquake.usgs.gov/**", (route) =>
+    route.fulfill({ json: { features: [] } }),
+  );
+  await page.route("https://www.gdacs.org/**", (route) =>
+    route.fulfill({ json: { type: "FeatureCollection", features: [] } }),
+  );
+  await page.route("https://eonet.gsfc.nasa.gov/**", (route) =>
+    route.fulfill({ json: { events: [] } }),
+  );
+  await page.route("https://services.swpc.noaa.gov/**", (route) =>
+    route.fulfill({ json: [] }),
+  );
+  await seed(page, [miami]);
+  await page.goto("/");
+
+  await expect(page.locator("[data-alert-status]")).toContainText(
+    "No alerts in the last 7 days",
+  );
+  await expect(page.locator("[data-warn-actions]")).toBeHidden();
+  await expect(page.locator("[data-warn-links]")).toBeHidden();
+});
