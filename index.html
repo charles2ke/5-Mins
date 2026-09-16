@@ -215,6 +215,12 @@
             </div>
 
             <p class="people-summary" data-people-summary></p>
+            <div class="warn-actions" data-warn-actions hidden>
+              <button type="button" class="warn" data-share-warning>
+                Share warning
+              </button>
+              <span class="warn-status" data-warn-status role="status"></span>
+            </div>
             <ul class="people-list" data-people></ul>
             <p class="safety-summary" data-safety-summary hidden></p>
             <ul class="alert-list" data-alerts></ul>
@@ -228,6 +234,18 @@
         <span data-person-name></span>
         <span class="contact" data-person-contact></span>
         <span class="safety" data-person-safety hidden></span>
+        <span class="warn-links" data-warn-links hidden>
+          <a class="warn-link" data-warn-email hidden>Email</a>
+          <a class="warn-link" data-warn-sms hidden>Text</a>
+          <a
+            class="warn-link"
+            data-warn-whatsapp
+            target="_blank"
+            rel="noopener noreferrer"
+            hidden
+            >WhatsApp</a
+          >
+        </span>
         <button type="button" class="safe" data-mark-safe hidden>I'm safe</button>
         <button type="button" class="link" data-undo-safe hidden>
           Undo safe

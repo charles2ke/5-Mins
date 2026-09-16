@@ -44,6 +44,12 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
   card when you only care about your own locations; the choice is kept in the
   URL as `?worldwide=0`.
 - Refresh all alerts on demand.
+- While a location has alerts in the last **7 days**, each person can be warned
+  through the apps already on the device: **Email** for an email address,
+  **Text** and **WhatsApp** for a phone number, each opened with the alert, the
+  place, an OpenStreetMap link and a request to confirm safety already written
+  for you. **Share warning** hands the same message to the system share sheet,
+  or copies it to the clipboard when the browser has none.
 - While an alert is active, each person can mark themselves safe. A new alert
   clears those check-ins so everyone confirms again.
 
@@ -114,6 +120,11 @@ view.*
 *Home — the live weather card shows the current conditions for each location
 above its alerts.*
 
+![A location card with a Share warning button and Email, Text and WhatsApp warning links next to each person](docs/images/warn-people-links.png)
+
+*Home — warn the people of a location by email, text or WhatsApp, or share the
+warning with any app on the device.*
+
 ![Setup page showing a location with its city, country and coordinates](docs/images/setup-page.png)
 
 *Setup — add the locations you watch, with an optional city and country that
@@ -167,6 +178,23 @@ that needs no account. The card draws the condition (clear, cloud, fog, rain,
 sleet, snow or thunderstorm, day or night) and lists the temperature, what it
 feels like, today's high and low, wind, humidity and precipitation. If the
 lookup is unavailable the card says so and the alerts are still shown.
+
+## Warning people
+
+5-Mins never sends a message itself and has no server, so a warning is handed
+to the apps the device already has:
+
+| Integration | What it opens |
+| --- | --- |
+| `mailto:` | The default mail app, with the subject and body of the warning filled in, for a person whose contact is an email address. |
+| `sms:` | The default messaging app, with the warning as the message, for a person whose contact is a phone number. |
+| [WhatsApp click to chat](https://faq.whatsapp.com/5913398998672934) (`wa.me`) | WhatsApp (or WhatsApp Web), with the warning ready to send to that number. |
+| [Web Share API](https://developer.mozilla.org/docs/Web/API/Navigator/share) | The system share sheet, so the warning can go to any app installed on the device. Browsers without it copy the warning to the clipboard instead. |
+| [OpenStreetMap](https://www.openstreetmap.org/) | Every warning carries a link that pins the location on a real map. |
+
+No account or API key is involved. 5-Mins never uploads your contacts and never
+sends anything on its own: a contact is only handed to the mail, messaging or
+WhatsApp app you pick, and only when you click one of these links yourself.
 
 ## City search
 

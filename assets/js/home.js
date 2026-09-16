@@ -6,6 +6,7 @@ import {
   WORLDWIDE_AREA,
 } from "./alerts.js";
 import { describePlace, matchesFilters, placeKey, placeOptions } from "./places.js";
+import { buildWarning, shareWarning, warningLink } from "./notify.js";
 import { loadLocations, saveLocations } from "./store.js";
 import { drawGraticule, drawLand, drawMarkers } from "./worldmap.js";
 import {
@@ -70,6 +71,13 @@ function safeUrl(value) {
   } catch {
     return null;
   }
+}
+
+/** An OpenStreetMap link to the location, for the warning message. */
+function warningLinkForLocation(location) {
+  const lat = location.lat.toFixed(4);
+  const lon = location.lon.toFixed(4);
+  return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=9/${lat}/${lon}`;
 }
 
 function errorMessage(error) {
@@ -485,7 +493,61 @@ function renderAlerts(node, alerts) {
   }
 }
 
-function renderPeople(node, location, alerting) {
+/**
+ * Shows the links that warn a person through the apps on the device. Each
+ * link is only offered when their contact suits it, so an email address gets
+ * "Email" and a phone number gets "Text" and "WhatsApp".
+ */
+function renderWarnLinks(item, person, warning) {
+  const container = item.querySelector("[data-warn-links]");
+  const channels = [
+    ["[data-warn-email]", "email", `Email a warning to ${person.name}`],
+    ["[data-warn-sms]", "sms", `Text a warning to ${person.name}`],
+    ["[data-warn-whatsapp]", "whatsapp", `Send ${person.name} a warning on WhatsApp`],
+  ];
+
+  let offered = 0;
+  for (const [selector, channel, label] of channels) {
+    const link = item.querySelector(selector);
+    const href = warningLink(person, warning, channel);
+    if (href) {
+      link.href = href;
+      link.setAttribute("aria-label", label);
+      link.hidden = false;
+      offered += 1;
+    } else {
+      link.remove();
+    }
+  }
+  container.hidden = offered === 0;
+}
+
+/**
+ * Wires the button that hands the warning to the system share sheet, or to
+ * the clipboard when the browser has no Web Share API.
+ */
+function renderShareWarning(node, warning) {
+  const actions = node.querySelector("[data-warn-actions]");
+  const status = node.querySelector("[data-warn-status]");
+  const button = node.querySelector("[data-share-warning]");
+  actions.hidden = !warning;
+  status.textContent = "";
+  if (!warning) return;
+
+  button.addEventListener("click", async () => {
+    button.disabled = true;
+    const outcome = await shareWarning(warning);
+    button.disabled = false;
+    status.textContent =
+      {
+        shared: "Warning shared.",
+        copied: "Warning copied to the clipboard.",
+        cancelled: "",
+      }[outcome] ?? "Sharing is unavailable in this browser.";
+  });
+}
+
+function renderPeople(node, location, alerting, warning = null) {
   const list = node.querySelector("[data-people]");
   const summary = node.querySelector("[data-safety-summary]");
   list.textContent = "";
@@ -497,6 +559,8 @@ function renderPeople(node, location, alerting) {
     item.dataset.safe = showSafetyState ? "true" : "false";
     item.querySelector("[data-person-name]").textContent = person.name;
     item.querySelector("[data-person-contact]").textContent = person.contact;
+
+    renderWarnLinks(item, person, warning);
 
     const safety = item.querySelector("[data-person-safety]");
     safety.hidden = !showSafetyState;
@@ -667,6 +731,8 @@ function renderWorldwide(alerts) {
   // Worldwide alerts belong to no place, so there is no weather to report.
   node.querySelector("[data-weather]").remove();
   node.querySelector("[data-people-summary]").hidden = true;
+  // Worldwide alerts belong to no location, so nobody is warned from here.
+  node.querySelector("[data-warn-actions]").remove();
 
   renderSeverityBadge(node, alerts);
   node.querySelector("[data-alert-status]").textContent =
@@ -730,7 +796,12 @@ function renderLocation(location) {
       : `Will alert: ${location.people.map((person) => person.name).join(", ")}.`;
 
   renderWeather(node, location);
-  renderPeople(node, location, alerts.length > 0);
+  const warning = buildWarning(location, alerts, {
+    place: placeLabel,
+    link: warningLinkForLocation(location),
+  });
+  renderShareWarning(node, warning);
+  renderPeople(node, location, alerts.length > 0, warning);
   renderAlerts(node, alerts);
   setupCollapse(node, location.id);
   locationList.append(node);
