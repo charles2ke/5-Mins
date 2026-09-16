@@ -44,12 +44,12 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
   card when you only care about your own locations; the choice is kept in the
   URL as `?worldwide=0`.
 - Refresh all alerts on demand.
-- While an alert is active, each person can be warned through the apps already
-  on the device: **Email** for an email address, **Text** and **WhatsApp** for a
-  phone number, each opened with the alert, the place, an OpenStreetMap link and
-  a request to confirm safety already written for you. **Share warning** hands
-  the same message to the system share sheet, or copies it to the clipboard when
-  the browser has none.
+- While a location has alerts in the last **7 days**, each person can be warned
+  through the apps already on the device: **Email** for an email address,
+  **Text** and **WhatsApp** for a phone number, each opened with the alert, the
+  place, an OpenStreetMap link and a request to confirm safety already written
+  for you. **Share warning** hands the same message to the system share sheet,
+  or copies it to the clipboard when the browser has none.
 - While an alert is active, each person can mark themselves safe. A new alert
   clears those check-ins so everyone confirms again.
 
