@@ -192,8 +192,9 @@ to the apps the device already has:
 | [Web Share API](https://developer.mozilla.org/docs/Web/API/Navigator/share) | The system share sheet, so the warning can go to any app installed on the device. Browsers without it copy the warning to the clipboard instead. |
 | [OpenStreetMap](https://www.openstreetmap.org/) | Every warning carries a link that pins the location on a real map. |
 
-No account, API key or third-party service is involved, and the contacts never
-leave the browser.
+No account or API key is involved. 5-Mins never uploads your contacts and never
+sends anything on its own: a contact is only handed to the mail, messaging or
+WhatsApp app you pick, and only when you click one of these links yourself.
 
 ## City search
 
