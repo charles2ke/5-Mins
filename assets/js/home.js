@@ -977,6 +977,8 @@ async function refreshEverything() {
     time.dateTime = updatedAt.toISOString();
     time.textContent = updatedAt.toLocaleTimeString();
     refreshStatus.replaceChildren("Updated ", time);
+  } catch {
+    refreshStatus.textContent = "Refresh failed";
   } finally {
     refreshing = false;
     refreshButton.disabled = false;
