@@ -2,6 +2,38 @@
 
 Provide users an alert before a catastrophe or disaster. The crucial minutes to save lives. 
 
+**Live site:** <https://charles2ke.github.io/5-Mins/>
+
+## Contents
+
+- [How it works](#how-it-works)
+- [Features](#features)
+- [Screenshots](#screenshots)
+- [Privacy](#privacy)
+- [Alert sources](#alert-sources)
+- [Live weather](#live-weather)
+- [Warning people](#warning-people)
+- [City search](#city-search)
+- [Running locally](#running-locally)
+- [Tests](#tests)
+- [Install it on your device](#install-it-on-your-device)
+- [Deployment](#deployment)
+- [Disclaimer](#disclaimer)
+
+## How it works
+
+1. **Add the places you watch** on the setup page — type a city and pick it
+   from the suggestions, use your current location, or enter coordinates.
+2. **Add the people to warn** for each place, with an email address or a phone
+   number.
+3. **Watch the map.** The home page pulls every alert reported for those places
+   in the last 7 days from five free public feeds, colours each marker by its
+   worst severity, and lets you warn people with one tap through email, text,
+   WhatsApp or the system share sheet.
+
+Everything runs in the browser: there is no account, no server and no API key,
+and your locations and contacts never leave the device.
+
 5-Mins is a small static website with four pages:
 
 - **Home** — a world map of every disaster or catastrophe alert reported for
@@ -13,8 +45,7 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
   to the data you enter.
 - **Install** — how to install 5-Mins as an app on any device.
 
-**Live site:** https://charles2ke.github.io/5-Mins/ (published automatically from
-`main`).
+The site is published automatically from `main`.
 
 ## Features
 
@@ -23,8 +54,9 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
 - World map with one marker per location, coloured by the most severe alert
   reported there in the last 7 days and sized by how many alerts there are.
 - Filter the map and the list by **country**, **city** or **severity**. The city
-  filter only offers cities from the selected country, the severity filter takes
-  **as many severities as you like** at once, and every filter is kept in the URL
+  filter only offers cities from the selected country, the severity filter is a
+  row of tick-able chips that takes **as many severities as you like** at once
+  (no ctrl-click, so it works on a phone), and every filter is kept in the URL
   (`?country=japan&city=tokyo&severity=extreme%2Csevere`) so a filtered view can be
   shared.
 - Every location card **folds away** with a click on its header; the alert count
@@ -43,7 +75,9 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
   card carries no local weather. A **Show worldwide alerts** switch hides that
   card when you only care about your own locations; the choice is kept in the
   URL as `?worldwide=0`.
-- Refresh all alerts on demand.
+- Refresh all alerts on demand: the button says **Refreshing…** while the feeds
+  answer, and the time of the last successful refresh stays next to it so it is
+  clear how fresh the map is.
 - While a location has alerts in the last **7 days**, each person can be warned
   through the apps already on the device: **Email** for an email address,
   **Text** and **WhatsApp** for a phone number, each opened with the alert, the
@@ -66,6 +100,8 @@ Provide users an alert before a catastrophe or disaster. The crucial minutes to 
 
 ### Everywhere
 
+- A **Skip to…** link is the first stop of the keyboard, so the navigation can
+  be jumped over on every page.
 - A sticky navigation bar keeps the four pages one tap away while the alert list
   scrolls; the links sit in a pill bar that scrolls sideways on small screens.
 - Dark and light themes: the site follows the system colour scheme, and the
@@ -149,6 +185,15 @@ or dark for good:
 ![The install page with an "Install this app on your device" panel and an Install app button](docs/images/install-panel.png)
 
 ![The sources page listing the five free public alert feeds behind 5-Mins](docs/images/sources-page.png)
+
+## Privacy
+
+5-Mins has no server, no account and no analytics. Locations and people live in
+the browser's `localStorage` on your own device, and the only requests the site
+makes are the public alert, weather and city-search feeds listed below — each
+one gets nothing but a set of coordinates or the text you typed. Contacts are
+never uploaded: they are only handed to your mail, messaging or WhatsApp app,
+and only when you click a warning link yourself.
 
 ## Alert sources
 
