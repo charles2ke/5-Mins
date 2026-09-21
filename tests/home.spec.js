@@ -711,6 +711,10 @@ test("says when the alerts on screen were last updated", async ({ page }) => {
 
   const status = page.locator("#refresh-status");
   await expect(status).toHaveText(/^Updated /);
+  await expect(status.locator("time")).toHaveAttribute(
+    "datetime",
+    /^\d{4}-\d{2}-\d{2}T/,
+  );
 
   // A slow feed keeps the refresh in flight long enough to see the busy state.
   let release;

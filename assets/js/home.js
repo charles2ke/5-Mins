@@ -972,11 +972,15 @@ async function refreshEverything() {
   refreshStatus.textContent = "Refreshing alerts and weather\u2026";
   try {
     await Promise.all([loadAllAlerts(), loadAllWeather()]);
+    const updatedAt = new Date();
+    const time = document.createElement("time");
+    time.dateTime = updatedAt.toISOString();
+    time.textContent = updatedAt.toLocaleTimeString();
+    refreshStatus.replaceChildren("Updated ", time);
   } finally {
     refreshing = false;
     refreshButton.disabled = false;
     refreshButton.textContent = "Refresh alerts";
-    refreshStatus.textContent = `Updated ${new Date().toLocaleTimeString()}`;
   }
 }
 
