@@ -233,6 +233,11 @@ function locationCards(page) {
   return page.locator("[data-location]:not([data-worldwide])");
 }
 
+/** One checkbox of the severity filter, by its label. */
+function severityChip(page, severity) {
+  return page.getByRole("checkbox", { name: severity, exact: true });
+}
+
 async function seed(page, locations) {
   await page.addInitScript((value) => {
     localStorage.setItem("5-mins.locations.v1", value);
@@ -573,7 +578,7 @@ test("filters by severity", async ({ page }, testInfo) => {
   await page.goto("/");
   await expect(page.locator("[data-alert]")).toHaveCount(8);
 
-  await page.getByLabel("Filter by severity").selectOption(["extreme"]);
+  await severityChip(page, "Extreme").check();
 
   await expect(page).toHaveURL(/severity=extreme/);
   await expect(locationCards(page)).toHaveCount(2);
@@ -587,7 +592,8 @@ test("filters by severity", async ({ page }, testInfo) => {
     contentType: "image/png",
   });
 
-  await page.getByLabel("Filter by severity").selectOption(["minor"]);
+  await severityChip(page, "Extreme").uncheck();
+  await severityChip(page, "Minor").check();
 
   // Only Tokyo has no minor alert, so its card and marker drop out.
   await expect(locationCards(page)).toHaveCount(0);
@@ -602,9 +608,8 @@ test("filters by several severities at once", async ({ page }, testInfo) => {
   await page.goto("/");
   await expect(page.locator("[data-alert]")).toHaveCount(8);
 
-  await page
-    .getByLabel("Filter by severity")
-    .selectOption(["extreme", "moderate"]);
+  await severityChip(page, "Extreme").check();
+  await severityChip(page, "Moderate").check();
 
   await expect(page).toHaveURL(/severity=extreme%2Cmoderate/);
   await expect(page.locator('[data-alert][data-severity="Extreme"]')).toHaveCount(2);
@@ -621,7 +626,8 @@ test("filters by several severities at once", async ({ page }, testInfo) => {
   });
 
   await page.getByRole("button", { name: "Clear filters" }).click();
-  await expect(page.getByLabel("Filter by severity")).toHaveValues([]);
+  await expect(severityChip(page, "Extreme")).not.toBeChecked();
+  await expect(severityChip(page, "Moderate")).not.toBeChecked();
   await expect(page.locator("[data-alert]")).toHaveCount(8);
 });
 
@@ -629,7 +635,8 @@ test("restores the severity filter from the url", async ({ page }) => {
   await seed(page, [miami]);
   await page.goto("/?severity=moderate");
 
-  await expect(page.getByLabel("Filter by severity")).toHaveValues(["moderate"]);
+  await expect(severityChip(page, "Moderate")).toBeChecked();
+  await expect(severityChip(page, "Extreme")).not.toBeChecked();
   await expect(page.locator("[data-alert]")).toHaveCount(1);
   await expect(page.locator("[data-alert]")).toContainText("Flood Watch");
 });
@@ -638,10 +645,8 @@ test("restores several severities from the url", async ({ page }) => {
   await seed(page, [miami]);
   await page.goto("/?severity=extreme,moderate");
 
-  await expect(page.getByLabel("Filter by severity")).toHaveValues([
-    "extreme",
-    "moderate",
-  ]);
+  await expect(severityChip(page, "Extreme")).toBeChecked();
+  await expect(severityChip(page, "Moderate")).toBeChecked();
   await expect(page.locator('[data-alert][data-severity="Extreme"]')).toHaveCount(1);
   await expect(page.locator('[data-alert][data-severity="Moderate"]')).toHaveCount(1);
   await expect(
@@ -698,6 +703,51 @@ test("refreshes every alert on demand", async ({ page }) => {
   await page.getByRole("button", { name: "Refresh alerts" }).click();
 
   await expect(page.locator("[data-alert]")).toHaveCount(4);
+});
+
+test("says when the alerts on screen were last updated", async ({ page }) => {
+  await seed(page, [miami]);
+  await page.goto("/");
+
+  const status = page.locator("#refresh-status");
+  await expect(status).toHaveText(/^Updated /);
+  await expect(status.locator("time")).toHaveAttribute(
+    "datetime",
+    /^\d{4}-\d{2}-\d{2}T/,
+  );
+
+  // A slow feed keeps the refresh in flight long enough to see the busy state.
+  let release;
+  const held = new Promise((resolve) => {
+    release = resolve;
+  });
+  await page.route("https://api.weather.gov/**", async (route) => {
+    await held;
+    await route.fulfill({ json: { features: [] } });
+  });
+
+  const refresh = page.getByRole("button", { name: /Refresh/ });
+  await refresh.click();
+  await expect(refresh).toHaveText("Refreshing\u2026");
+  await expect(refresh).toBeDisabled();
+
+  release();
+  await expect(refresh).toHaveText("Refresh alerts");
+  await expect(refresh).toBeEnabled();
+  await expect(status).toHaveText(/^Updated /);
+});
+
+test("lets the keyboard skip straight to the alerts", async ({ page }) => {
+  await seed(page, [miami]);
+  await page.goto("/");
+
+  const skip = page.getByRole("link", { name: "Skip to the alerts" });
+  await page.keyboard.press("Tab");
+  await expect(skip).toBeFocused();
+  await expect(skip).toBeInViewport();
+
+  await skip.press("Enter");
+  await expect(page).toHaveURL(/#main$/);
 });
 
 test("follows the system colour scheme by default", async ({ page }) => {

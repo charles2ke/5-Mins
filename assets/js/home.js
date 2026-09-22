@@ -22,6 +22,8 @@ const worldwideToggle = document.querySelector("#toggle-worldwide");
 const countryFilter = document.querySelector("#filter-country");
 const cityFilter = document.querySelector("#filter-city");
 const severityFilter = document.querySelector("#filter-severity");
+const severityChips = document.querySelector("#severity-chips");
+const refreshStatus = document.querySelector("#refresh-status");
 const filterHint = document.querySelector("#filter-hint");
 const mapSummary = document.querySelector("#map-summary");
 const markerGroup = document.querySelector("#map-markers");
@@ -51,6 +53,8 @@ const collapsed = new Set();
 /** Id of the card that lists the alerts affecting every location. */
 const WORLDWIDE_ID = "worldwide";
 let selectedId = null;
+/** True while a refresh of the alert and weather feeds is in flight. */
+let refreshing = false;
 
 drawGraticule(document.querySelector("#map-graticule"));
 drawLand(document.querySelector("#map-land"));
@@ -234,30 +238,42 @@ function fillSelect(select, options, selectedKey, allLabel) {
 }
 
 /**
- * Fills a multiple-choice filter with `options` and ticks `selectedKeys`.
+ * Fills the severity filter with a checkbox per `options` entry and ticks
+ * `selectedKeys`.
  *
- * A multi-select has no "all" entry: selecting nothing already means "all".
+ * Checkboxes replace a `<select multiple>`: ticking several severities takes
+ * one tap each instead of a ctrl-click, which no touch device offers.
  */
-function fillMultiSelect(select, options, selectedKeys) {
+function fillChips(container, options, selectedKeys) {
   const signature = JSON.stringify(
     options.map((option) => [option.key, option.label]),
   );
 
-  if (select.dataset.options !== signature) {
-    select.textContent = "";
+  if (container.dataset.options !== signature) {
+    container.textContent = "";
     for (const option of options) {
-      const node = document.createElement("option");
-      node.value = option.key;
-      node.textContent = option.label;
-      select.append(node);
+      const label = document.createElement("label");
+      label.className = "chip";
+      label.dataset.severity = option.label;
+
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.value = option.key;
+      input.dataset.severityChip = "";
+
+      const text = document.createElement("span");
+      text.textContent = option.label;
+
+      label.append(input, text);
+      container.append(label);
     }
-    select.dataset.options = signature;
+    container.dataset.options = signature;
   }
 
-  for (const node of select.options) {
-    const selected = selectedKeys.includes(node.value);
-    if (node.selected !== selected) {
-      node.selected = selected;
+  for (const input of container.querySelectorAll("input[type=checkbox]")) {
+    const checked = selectedKeys.includes(input.value);
+    if (input.checked !== checked) {
+      input.checked = checked;
     }
   }
 }
@@ -297,13 +313,14 @@ function renderFilters() {
 
   fillSelect(countryFilter, countries, filters.country, "All countries");
   fillSelect(cityFilter, cities, filters.city, "All cities");
-  fillMultiSelect(severityFilter, severityOptions(), filters.severity);
+  fillChips(severityChips, severityOptions(), filters.severity);
   worldwideToggle.setAttribute("aria-checked", String(filters.worldwide));
 
   countryFilter.disabled = countries.length === 0;
   cityFilter.disabled = cities.length === 0;
   severityFilter.disabled = locations.length === 0;
   worldwideToggle.disabled = locations.length === 0;
+  refreshButton.disabled = refreshing || locations.length === 0;
   clearFiltersButton.disabled = !hasFilters();
   // Without a city or country on any location the place filters stay empty,
   // which otherwise looks like a broken control.
@@ -909,9 +926,11 @@ cityFilter.addEventListener("change", () => {
   render();
 });
 
-severityFilter.addEventListener("change", () => {
+severityChips.addEventListener("change", () => {
   const chosen = new Set(
-    [...severityFilter.selectedOptions].map((option) => option.value),
+    [...severityChips.querySelectorAll("input[type=checkbox]:checked")].map(
+      (input) => input.value,
+    ),
   );
   filters.severity = severityOptions()
     .map((option) => option.key)
@@ -937,13 +956,41 @@ clearFiltersButton.addEventListener("click", () => {
   render();
 });
 
+/**
+ * Reloads every feed and keeps the reader posted: the button says what it is
+ * doing while the requests are in flight, then the status says how fresh the
+ * alerts on screen are.
+ */
+async function refreshEverything() {
+  if (locations.length === 0) {
+    refreshStatus.textContent = "";
+    return;
+  }
+  refreshing = true;
+  refreshButton.disabled = true;
+  refreshButton.textContent = "Refreshing\u2026";
+  refreshStatus.textContent = "Refreshing alerts and weather\u2026";
+  try {
+    await Promise.all([loadAllAlerts(), loadAllWeather()]);
+    const updatedAt = new Date();
+    const time = document.createElement("time");
+    time.dateTime = updatedAt.toISOString();
+    time.textContent = updatedAt.toLocaleTimeString();
+    refreshStatus.replaceChildren("Updated ", time);
+  } catch {
+    refreshStatus.textContent = "Refresh failed";
+  } finally {
+    refreshing = false;
+    refreshButton.disabled = false;
+    refreshButton.textContent = "Refresh alerts";
+  }
+}
+
 refreshButton.addEventListener("click", () => {
-  loadAllAlerts();
-  loadAllWeather();
+  refreshEverything();
 });
 
 readFiltersFromUrl();
 render();
 syncFiltersToUrl();
-loadAllAlerts();
-loadAllWeather();
+refreshEverything();

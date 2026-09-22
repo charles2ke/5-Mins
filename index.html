@@ -38,6 +38,7 @@
     </script>
   </head>
   <body>
+    <a class="skip-link" href="#main">Skip to the alerts</a>
     <header class="site-header">
       <div class="site-bar">
         <div class="brand">
@@ -76,11 +77,14 @@
       watch, on one world map.
     </p>
 
-    <main>
+    <main id="main">
       <section class="panel" aria-labelledby="map-heading">
         <div class="panel-header">
           <h2 id="map-heading">World map of recent alerts</h2>
-          <button type="button" id="refresh-alerts">Refresh alerts</button>
+          <div class="refresh">
+            <p id="refresh-status" class="status" role="status"></p>
+            <button type="button" id="refresh-alerts">Refresh alerts</button>
+          </div>
         </div>
 
         <div class="filters">
@@ -97,15 +101,16 @@
             </select>
           </div>
           <div class="field">
-            <label for="filter-severity">Filter by severity</label>
-            <select
+            <fieldset
+              class="chips"
               id="filter-severity"
-              multiple
-              size="5"
               aria-describedby="severity-hint"
-            ></select>
+            >
+              <legend class="field-label">Filter by severity</legend>
+              <div class="chip-list" id="severity-chips"></div>
+            </fieldset>
             <p id="severity-hint" class="note">
-              Pick one or more severities; none selected shows them all.
+              Tick one or more severities; none ticked shows them all.
             </p>
           </div>
           <div class="field">
