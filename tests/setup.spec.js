@@ -274,3 +274,47 @@ test("keeps the form usable when the city lookup fails", async ({ page }) => {
   await page.getByRole("button", { name: "Add location" }).click();
   await expect(page.getByRole("heading", { name: "Miami" })).toBeVisible();
 });
+
+test.describe("on a phone", () => {
+  test.use({
+    viewport: { width: 390, height: 664 },
+    isMobile: true,
+    hasTouch: true,
+  });
+
+  test("keeps a long name and address on screen", async ({
+    page,
+  }, testInfo) => {
+    await addLocation(page, {
+      name: "Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch",
+      city: "Llanfairpwllgwyngyll",
+      country: "United Kingdom",
+      lat: "53.2232",
+      lon: "-4.2041",
+    });
+    await page.getByLabel("Person name").fill("Alexandria Konstantinopoulou");
+    await page
+      .getByLabel("Email or phone")
+      .fill("alexandria.konstantinopoulou@international-example.org");
+    await page.getByRole("button", { name: "Add person" }).click();
+    await expect(page.locator("[data-person]")).toHaveCount(1);
+
+    // The remove button stays beside the name instead of being pushed past
+    // the edge of the screen, and the page never scrolls sideways.
+    const screenWidth = await page.evaluate(
+      () => document.documentElement.clientWidth,
+    );
+    const removeRight = await page
+      .getByRole("button", { name: "Remove location" })
+      .evaluate((node) => node.getBoundingClientRect().right + window.scrollX);
+    expect(removeRight).toBeLessThanOrEqual(screenWidth);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(screenWidth);
+
+    await testInfo.attach("setup-phone-long-names", {
+      body: await page.screenshot({ fullPage: true }),
+      contentType: "image/png",
+    });
+  });
+});

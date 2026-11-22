@@ -115,6 +115,9 @@
 html {
   /* Keeps the layout stable when an iPhone or iPad is rotated. */
   -webkit-text-size-adjust: 100%;
+  /* Keeps scrolled-to and focused content clear of the sticky navigation bar,
+     which is taller by the notch on an iPhone. */
+  scroll-padding-top: calc(4.5rem + env(safe-area-inset-top, 0px));
 }
 
 body {
@@ -173,9 +176,9 @@ main,
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  /* The nav takes the space it needs before the brand gives any up. */
-  flex: 0 1 auto;
-  min-width: 0;
+  /* The brand never shrinks under the nav, which scrolls its pills instead;
+     phones show the logo alone (see the 30rem query). */
+  flex: none;
 }
 
 .brand-logo {
@@ -270,8 +273,6 @@ main,
   border-radius: 0.75rem;
   padding: 1.25rem;
   margin-bottom: 1.5rem;
-  /* Keeps scrolled-to content clear of the sticky navigation bar. */
-  scroll-margin-top: 4.5rem;
 }
 
 .panel h2 {
@@ -537,7 +538,8 @@ button.link {
   position: absolute;
   left: -9999px;
   top: 0;
-  z-index: 20;
+  /* Above the sticky navigation bar, which would otherwise cover it. */
+  z-index: 30;
   padding: 0.6rem 0.9rem;
   border-radius: 0 0 0.5rem 0;
   background: var(--accent);
@@ -546,7 +548,9 @@ button.link {
 }
 
 .skip-link:focus {
-  left: 0;
+  /* Clear of the status bar and notch of an installed app. */
+  top: env(safe-area-inset-top, 0px);
+  left: env(safe-area-inset-left, 0px);
 }
 
 .error {
@@ -628,7 +632,6 @@ button.link {
   padding: 1rem;
   margin-top: 1rem;
   background: var(--panel-alt);
-  scroll-margin-top: 4.5rem;
 }
 
 .location[data-selected] {
@@ -645,6 +648,16 @@ button.link {
 
 .location-header h3 {
   margin: 0;
+}
+
+/* Long names, places and addresses wrap instead of widening the card past
+   the edge of a phone screen. */
+.location h3,
+.location .place,
+.people-summary,
+.person [data-person-name],
+.person .contact {
+  overflow-wrap: anywhere;
 }
 
 /* ------------------------------------------------- collapsible location */
@@ -1208,8 +1221,17 @@ button.safe:hover {
     padding: 0.5rem 0;
   }
 
+  /* The logo stands in for the name, leaving the nav the room; screen
+     readers still announce the heading. */
   .site-header h1 {
-    font-size: 1.15rem;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    clip-path: inset(50%);
   }
 
   .site-nav a {
