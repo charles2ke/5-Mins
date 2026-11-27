@@ -205,6 +205,20 @@ const tokyo = {
   people: [],
 };
 
+/** A real place name and an email address with nowhere to break a line. */
+const longNames = {
+  ...miami,
+  id: "llanfair",
+  name: "Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch",
+  people: [
+    {
+      id: "alexandria",
+      name: "Alexandria Konstantinopoulou",
+      contact: "alexandria.konstantinopoulou@international-example.org",
+    },
+  ],
+};
+
 test.beforeEach(async ({ page }) => {
   const feeds = buildFeeds();
 
@@ -242,6 +256,33 @@ async function seed(page, locations) {
   await page.addInitScript((value) => {
     localStorage.setItem("5-mins.locations.v1", value);
   }, JSON.stringify(locations));
+}
+
+/** Whether nothing is drawn over the middle of `locator`. */
+function isOnTop(locator) {
+  return locator.evaluate((node) => {
+    const box = node.getBoundingClientRect();
+    const hit = document.elementFromPoint(
+      box.left + box.width / 2,
+      box.top + box.height / 2,
+    );
+    return node.contains(hit);
+  });
+}
+
+/** How far below the sticky navigation bar `locator` starts. */
+async function gapBelowNavBar(page, locator) {
+  const header = await page.locator(".site-header").boundingBox();
+  const box = await locator.boundingBox();
+  return box.y - (header.y + header.height);
+}
+
+/** The width of what `locator` holds next to the width of its own box. */
+function widths(locator) {
+  return locator.evaluate((node) => ({
+    content: node.scrollWidth,
+    box: node.clientWidth,
+  }));
 }
 
 test("points at the setup page when nothing is watched yet", async ({
@@ -745,9 +786,18 @@ test("lets the keyboard skip straight to the alerts", async ({ page }) => {
   await page.keyboard.press("Tab");
   await expect(skip).toBeFocused();
   await expect(skip).toBeInViewport();
+  // Drawn over the sticky navigation bar, not hidden under it.
+  expect(await isOnTop(skip)).toBe(true);
 
   await skip.press("Enter");
   await expect(page).toHaveURL(/#main$/);
+  // The alerts start below the sticky navigation bar, not behind it.
+  await expect
+    .poll(() => page.evaluate(() => window.scrollY))
+    .toBeGreaterThan(0);
+  expect(
+    await gapBelowNavBar(page, page.locator("#main")),
+  ).toBeGreaterThanOrEqual(0);
 });
 
 test("follows the system colour scheme by default", async ({ page }) => {
@@ -1068,4 +1118,114 @@ test("offers no warning when a location has no recent alerts", async ({
   );
   await expect(page.locator("[data-warn-actions]")).toBeHidden();
   await expect(page.locator("[data-warn-links]")).toBeHidden();
+});
+
+test.describe("on a phone", () => {
+  test.use({
+    viewport: { width: 390, height: 664 },
+    isMobile: true,
+    hasTouch: true,
+  });
+
+  test("keeps the site name clear of the nav", async ({ page }, testInfo) => {
+    await page.goto("/");
+    const name = page.getByRole("heading", { name: "5-Mins", exact: true });
+    const nav = page.getByRole("navigation", { name: "Main" });
+
+    for (const width of [430, 390, 320]) {
+      await page.setViewportSize({ width, height: 664 });
+      const nameBox = await name.boundingBox();
+      const navBox = await nav.boundingBox();
+      expect(nameBox.x + nameBox.width, `${width}px wide`).toBeLessThanOrEqual(
+        navBox.x,
+      );
+    }
+
+    await testInfo.attach("phone-header", {
+      body: await page.screenshot(),
+      contentType: "image/png",
+    });
+  });
+
+  test("wraps long names instead of widening the page", async ({
+    page,
+  }, testInfo) => {
+    await seed(page, [longNames]);
+    await page.goto("/");
+    await expect(
+      locationCards(page).locator("[data-location-severity]"),
+    ).toHaveText("Extreme");
+
+    // The name wraps inside its own box instead of running under the
+    // severity badge, and nothing reaches past the edge of the screen.
+    const name = await widths(
+      page.getByRole("heading", { name: longNames.name }),
+    );
+    expect(name.content).toBeLessThanOrEqual(name.box);
+    const screen = await widths(page.locator("html"));
+    expect(screen.content).toBeLessThanOrEqual(screen.box);
+
+    await testInfo.attach("phone-long-names", {
+      body: await page.screenshot({ fullPage: true }),
+      contentType: "image/png",
+    });
+  });
+
+  test("keeps a control tabbed back to clear of the nav", async ({ page }) => {
+    await seed(page, [miami]);
+    await page.goto("/");
+    const refresh = page.getByRole("button", { name: "Refresh alerts" });
+    await refresh.focus();
+    await page.keyboard.press("Tab");
+
+    // Leave the button behind the nav, where the previous control usually
+    // sits when tabbing back up a page, then tab back to it.
+    await refresh.evaluate((node) =>
+      window.scrollBy(0, node.getBoundingClientRect().top - 10),
+    );
+    await page.keyboard.press("Shift+Tab");
+
+    await expect(refresh).toBeFocused();
+    await expect
+      .poll(() => gapBelowNavBar(page, refresh))
+      .toBeGreaterThanOrEqual(0);
+  });
+
+  test("scrolls a location picked on the map clear of the nav under a notch", async ({
+    page,
+    context,
+    browserName,
+  }, testInfo) => {
+    test.skip(browserName !== "chromium", "Emulates the notch over CDP.");
+    // Installed on a notched iPhone, the app draws under the status bar and
+    // the sticky navigation bar grows by its height.
+    const cdp = await context.newCDPSession(page);
+    await cdp.send("Emulation.setSafeAreaInsetsOverride", {
+      insets: {
+        top: 47,
+        topMax: 47,
+        left: 0,
+        leftMax: 0,
+        bottom: 34,
+        bottomMax: 34,
+        right: 0,
+        rightMax: 0,
+      },
+    });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await seed(page, [miami, tokyo]);
+    await page.goto("/");
+    await expect(page.locator(".map-marker")).toHaveCount(2);
+
+    await page.locator('.map-marker[data-marker-id="tokyo"]').click();
+
+    const card = page.locator("[data-location][data-selected]");
+    await expect(card).toContainText("Tokyo office");
+    expect(await gapBelowNavBar(page, card)).toBeGreaterThanOrEqual(0);
+
+    await testInfo.attach("phone-notch-selected-location", {
+      body: await page.screenshot(),
+      contentType: "image/png",
+    });
+  });
 });
